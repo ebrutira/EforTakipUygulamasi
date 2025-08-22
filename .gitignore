@@ -1,0 +1,37 @@
+﻿# Build sonuçları
+bin/
+obj/
+out/
+
+# Visual Studio dosyaları
+.vs/
+*.user
+*.suo
+*.cache
+*.vsidx
+*.vssscc
+
+# NuGet Packages
+packages/
+*.nupkg
+*.snupkg
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Log dosyaları
+*.log
+
+# OS dosyaları
+Thumbs.db
+.DS_Store
+
+# SQLite veritabanı dosyaları
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads klasörü
+wwwroot/uploads/

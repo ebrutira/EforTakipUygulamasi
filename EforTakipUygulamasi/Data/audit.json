@@ -1,0 +1,156 @@
+[
+  {
+    "id": 1,
+    "entity": "Request",
+    "entityId": 1,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Kullan\u0131c\u0131 Giri\u015F Sistemi",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2598138+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 2,
+    "entity": "Request",
+    "entityId": 2,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Rapor Mod\u00FCl\u00FC",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2598992+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 3,
+    "entity": "Request",
+    "entityId": 3,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Dashboard Tasar\u0131m\u0131",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2598998+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 4,
+    "entity": "Request",
+    "entityId": 4,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Veritaban\u0131 Optimizasyonu",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2599+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 5,
+    "entity": "Request",
+    "entityId": 5,
+    "field": "",
+    "oldValue": "",
+    "newValue": "API Geli\u015Ftirme",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2599003+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 6,
+    "entity": "Request",
+    "entityId": 6,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Mobile App Frontend",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2599008+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 7,
+    "entity": "Request",
+    "entityId": 7,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Email Entegrasyonu",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.259901+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 8,
+    "entity": "Request",
+    "entityId": 8,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Yedekleme Sistemi",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2599015+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 9,
+    "entity": "Request",
+    "entityId": 9,
+    "field": "",
+    "oldValue": "",
+    "newValue": "G\u00FCvenlik G\u00FCncellemeleri",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2599018+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 10,
+    "entity": "Request",
+    "entityId": 10,
+    "field": "",
+    "oldValue": "",
+    "newValue": "Performans \u0130zleme",
+    "user": "Koray",
+    "date": "2025-08-20T15:38:34.2599021+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 11,
+    "entity": "Request",
+    "entityId": 6,
+    "field": "AnalystHours",
+    "oldValue": "10",
+    "newValue": "27",
+    "user": "Koray",
+    "date": "2025-08-20T15:55:30.5320665+03:00",
+    "action": "UPDATE"
+  },
+  {
+    "id": 12,
+    "entity": "Request",
+    "entityId": 11,
+    "field": "",
+    "oldValue": "",
+    "newValue": "deneme",
+    "user": "Koray",
+    "date": "2025-08-20T16:10:22.7902436+03:00",
+    "action": "CREATE"
+  },
+  {
+    "id": 13,
+    "entity": "Request",
+    "entityId": 11,
+    "field": "",
+    "oldValue": "deneme",
+    "newValue": "",
+    "user": "System",
+    "date": "2025-08-20T16:34:06.254802+03:00",
+    "action": "DELETE"
+  },
+  {
+    "id": 14,
+    "entity": "Request",
+    "entityId": 11,
+    "field": "",
+    "oldValue": "",
+    "newValue": "deneme",
+    "user": "Koray",
+    "date": "2025-08-20T17:03:47.2806981+03:00",
+    "action": "CREATE"
+  }
+]

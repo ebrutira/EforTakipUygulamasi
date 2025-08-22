@@ -1,0 +1,216 @@
+﻿@model IEnumerable<EforTakipUygulamasi.Models.Request>
+@{
+    ViewData["Title"] = "Talepler";
+}
+
+<div class="container">
+    <!-- Başarı/Hata Mesajları -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="notification show" id="successNotification">
+            <button class="close-btn" onclick="hideNotification('successNotification')">&times;</button>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="notification show" id="errorNotification" style="background: #e53e3e;">
+            <button class="close-btn" onclick="hideNotification('errorNotification')">&times;</button>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
+    <!-- Dashboard Stats -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-value" id="totalItems">@Model.Count()</div>
+            <div class="stat-label">Toplam İş</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="inProgress">@Model.Count(r => r.Status == EforTakipUygulamasi.Models.RequestStatus.InProgress)</div>
+            <div class="stat-label">Devam Eden</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalHours">@Model.Sum(r => r.TotalHours).ToString("F0")</div>
+            <div class="stat-label">Toplam Saat</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="overdueItems">@Model.Count(r => r.Deadline.HasValue && r.Deadline.Value.Date < DateTime.Today && r.Status != EforTakipUygulamasi.Models.RequestStatus.Completed)</div>
+            <div class="stat-label">Geciken</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="filter-group">
+            <select class="select" id="statusFilter">
+                <option value="">Tüm Durumlar</option>
+                <option value="New">Yeni</option>
+                <option value="InProgress">Devam Eden</option>
+                <option value="Testing">Test</option>
+                <option value="Completed">Tamamlandı</option>
+                <option value="Cancelled">İptal</option>
+            </select>
+            <select class="select" id="sizeFilter">
+                <option value="">Tüm Büyüklükler</option>
+                <option value="FastTrack">Fast Track</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+            </select>
+            <input type="text" class="input" placeholder="İş ara..." id="searchInput">
+        </div>
+        <a href="@Url.Action("Create")" class="btn btn-primary">+ Yeni İş Ekle</a>
+    </div>
+
+    <!-- Work Items Table -->
+    <div class="work-items">
+        <div class="table-header">
+            <div>İş Başlığı</div>
+            <div>Durum</div>
+            <div>Büyüklük</div>
+            <div>Analist</div>
+            <div>Yazılım</div>
+            <div>KKT/Test</div>
+            <div>Toplam</div>
+            <div>Teslim Tarihi</div>
+        </div>
+        <div id="workItemsList">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var request in Model)
+                {
+                    <div class="work-item" onclick="editRequest(@request.Id)">
+                        <div class="work-title">@request.Name</div>
+                        <div>
+                            <span class="status-badge status-@request.Status.ToString().ToLower()">
+                                @GetStatusText(request.Status)
+                            </span>
+                        </div>
+                        <div>
+                            <span class="difficulty-badge @GetSizeBadgeClass(request.Size)">
+                                @request.Size
+                            </span>
+                        </div>
+                        <div class="effort-hours">@request.AnalystHours.ToString("F1")h</div>
+                        <div class="effort-hours">@request.DeveloperHours.ToString("F1")h</div>
+                        <div class="effort-hours">@((request.KKTHours + request.PreprodHours).ToString("F1"))h</div>
+                        <div class="effort-hours"><strong>@request.TotalHours.ToString("F1")h</strong></div>
+                        <div class="deadline @GetDeadlineClass(request.Deadline)">
+                            @(request.Deadline?.ToString("dd.MM.yyyy") ?? "-")
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="text-align: center; padding: 3rem; color: #999;">
+                    <i class="fas fa-inbox fa-3x" style="margin-bottom: 1rem;"></i>
+                    <p>Henüz iş bulunmuyor.</p>
+                    <a href="@Url.Action("Create")" class="btn btn-primary" style="margin-top: 1rem;">İlk İşi Oluştur</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusText(EforTakipUygulamasi.Models.RequestStatus status)
+    {
+        return status switch
+        {
+            EforTakipUygulamasi.Models.RequestStatus.New => "Yeni",
+            EforTakipUygulamasi.Models.RequestStatus.InProgress => "Devam Eden",
+            EforTakipUygulamasi.Models.RequestStatus.Testing => "Test",
+            EforTakipUygulamasi.Models.RequestStatus.Completed => "Tamamlandı",
+            EforTakipUygulamasi.Models.RequestStatus.Cancelled => "İptal",
+            _ => status.ToString()
+        };
+    }
+
+    string GetSizeBadgeClass(EforTakipUygulamasi.Models.TShirtSize size)
+    {
+        return size switch
+        {
+            EforTakipUygulamasi.Models.TShirtSize.FastTrack => "diff-1",
+            EforTakipUygulamasi.Models.TShirtSize.XS => "diff-1",
+            EforTakipUygulamasi.Models.TShirtSize.S => "diff-2",
+            EforTakipUygulamasi.Models.TShirtSize.M => "diff-3",
+            EforTakipUygulamasi.Models.TShirtSize.L => "diff-4",
+            EforTakipUygulamasi.Models.TShirtSize.XL => "diff-5",
+            _ => "diff-2"
+        };
+    }
+
+    string GetDeadlineClass(DateTime? deadline)
+    {
+        if (!deadline.HasValue) return "";
+
+        var today = DateTime.Today;
+        var diffDays = (deadline.Value.Date - today).Days;
+
+        if (diffDays < 0) return "overdue";
+        if (diffDays <= 3) return "warning";
+        return "";
+    }
+}
+
+@section Scripts {
+    <script>
+        function editRequest(id) {
+            window.location.href = '@Url.Action("Edit", "Request")/' + id;
+        }
+
+        function hideNotification(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        // Otomatik notification gizleme
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.notification').removeClass('show');
+            }, 3000);
+
+            // Filtreleme
+            $('#statusFilter, #sizeFilter').on('change', filterItems);
+            $('#searchInput').on('input', filterItems);
+        });
+
+        function filterItems() {
+            var searchTerm = $('#searchInput').val().toLowerCase();
+            var statusFilter = $('#statusFilter').val();
+            var sizeFilter = $('#sizeFilter').val();
+
+            $('#workItemsList .work-item').each(function() {
+                var $item = $(this);
+                var title = $item.find('.work-title').text().toLowerCase();
+                var status = $item.find('.status-badge').text().trim();
+                var size = $item.find('.difficulty-badge').text().trim();
+
+                var matchesSearch = title.includes(searchTerm);
+                var matchesStatus = !statusFilter || status.includes(getStatusText(statusFilter));
+                var matchesSize = !sizeFilter || size === sizeFilter;
+
+                if (matchesSearch && matchesStatus && matchesSize) {
+                    $item.show();
+                } else {
+                    $item.hide();
+                }
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'New': 'Yeni',
+                'InProgress': 'Devam Eden',
+                'Testing': 'Test',
+                'Completed': 'Tamamlandı',
+                'Cancelled': 'İptal'
+            };
+            return statusMap[status] || status;
+        }
+    </script>
+}

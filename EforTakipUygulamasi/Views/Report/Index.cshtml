@@ -1,0 +1,112 @@
+﻿@{
+    ViewData["Title"] = "Raporlar";
+}
+
+<div class="container">
+    <!-- Rapor Başlığı -->
+    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="margin: 0; color: #333;">📊 Efor Takip Raporları</h1>
+            <div style="display: flex; gap: 1rem;">
+                <a href="/Report/ExportData?format=csv" class="btn btn-secondary">📄 CSV İndir</a>
+                <a href="/Report/ExportData?format=json" class="btn btn-primary">📁 JSON İndir</a>
+            </div>
+        </div>
+        <p style="color: #666; margin: 0.5rem 0 0 0;">Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
+    </div>
+
+    <!-- Basit İstatistikler -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-value">10</div>
+            <div class="stat-label">Toplam Talep</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">2</div>
+            <div class="stat-label">Tamamlanan</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Devam Eden</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">1</div>
+            <div class="stat-label">Geciken</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">312</div>
+            <div class="stat-label">Toplam Saat</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">31.2</div>
+            <div class="stat-label">Ortalama Saat</div>
+        </div>
+    </div>
+
+    <!-- Efor Dağılımı -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 1rem; color: #333;">Efor Dağılımı</h3>
+            <div style="display: grid; gap: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>👨‍💼 Analist:</span>
+                    <strong>69.0 saat</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>💻 Yazılım:</span>
+                    <strong>167.0 saat</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>🧪 KKT:</span>
+                    <strong>49.0 saat</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>🚀 Preprod:</span>
+                    <strong>27.0 saat</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performans Metrikleri -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 1rem; color: #333;">Performans Metrikleri</h3>
+            <div style="display: grid; gap: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>📅 Bu Ay Oluşturulan:</span>
+                    <strong>10 talep</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>📆 Bu Hafta Oluşturulan:</span>
+                    <strong>3 talep</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>✅ Tamamlanma Oranı:</span>
+                    <strong>20.0%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
+                    <span>⚠️ Geciken Oranı:</span>
+                    <strong>10.0%</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rapor Açıklaması -->
+    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom: 1rem; color: #333;">📋 Rapor Özeti</h3>
+        <div style="line-height: 1.6; color: #555;">
+            <p><strong>Genel Durum:</strong> Toplam 10 iş talebi bulunmakta, bunların 3'ü aktif olarak devam etmekte, 2'si tamamlanmış durumda.</p>
+
+            <p><strong>Efor Analizi:</strong> En çok efor yazılım geliştirme kısmında harcanmış (167 saat), bunu analist çalışmaları (69 saat) takip ediyor.</p>
+
+            <p><strong>Performans:</strong> Tamamlanma oranı %20 seviyesinde. Geciken iş oranı %10 ile kabul edilebilir seviyede.</p>
+
+            <p><strong>Öneriler:</strong></p>
+            <ul style="margin-left: 1.5rem;">
+                <li>Yazılım geliştirme süreçleri optimize edilebilir</li>
+                <li>Test süreçleri için daha fazla kaynak ayrılmalı</li>
+                <li>Deadline takibi güçlendirilmeli</li>
+            </ul>
+        </div>
+    </div>
+</div>

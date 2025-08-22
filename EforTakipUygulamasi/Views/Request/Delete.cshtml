@@ -1,0 +1,75 @@
+﻿@model EforTakipUygulamasi.Models.Request
+@{
+    ViewData["Title"] = "İş Sil";
+}
+
+<div class="container">
+    <div class="modal-content" style="position: static; margin: 2rem auto; max-width: 600px;">
+        <h2 style="color: #e53e3e;">⚠️ İş Silme Onayı</h2>
+
+        <div style="background: #fed7d7; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
+            <h3>Bu işi silmek istediğinizden emin misiniz?</h3>
+            <p style="margin: 1rem 0;"><strong>@Model.Name</strong></p>
+            <p style="color: #666;">Bu işlem geri alınamaz!</p>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">İş ID</label>
+                <div class="form-input" style="background: #f7fafc;">#@Model.Id</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Durum</label>
+                <div class="form-input" style="background: #f7fafc;">@GetStatusText(Model.Status)</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Toplam Saat</label>
+                <div class="form-input" style="background: #f7fafc;">@Model.TotalHours.ToString("F1") saat</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Açıklama</label>
+            <div class="form-input" style="background: #f7fafc; min-height: 80px;">@(Model.Description ?? "Açıklama yok")</div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Oluşturan</label>
+                <div class="form-input" style="background: #f7fafc;">@Model.CreatedBy</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Oluşturma Tarihi</label>
+                <div class="form-input" style="background: #f7fafc;">@Model.CreatedDate.ToString("dd.MM.yyyy")</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Deadline</label>
+                <div class="form-input" style="background: #f7fafc;">@(Model.Deadline?.ToString("dd.MM.yyyy") ?? "Yok")</div>
+            </div>
+        </div>
+
+        <form asp-action="Delete" method="post" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+            <input asp-for="Id" type="hidden" />
+            <a href="@Url.Action("Index")" class="btn btn-secondary">İptal</a>
+            <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">Düzenle</a>
+            <button type="submit" class="btn" style="background: #e53e3e; color: white;" onclick="return confirm('Bu işi silmek istediğinizden emin misiniz?')">
+                🗑️ Sil
+            </button>
+        </form>
+    </div>
+</div>
+
+@functions {
+    string GetStatusText(EforTakipUygulamasi.Models.RequestStatus status)
+    {
+        return status switch
+        {
+            EforTakipUygulamasi.Models.RequestStatus.New => "Yeni",
+            EforTakipUygulamasi.Models.RequestStatus.InProgress => "Devam Eden",
+            EforTakipUygulamasi.Models.RequestStatus.Testing => "Test",
+            EforTakipUygulamasi.Models.RequestStatus.Completed => "Tamamlandı",
+            EforTakipUygulamasi.Models.RequestStatus.Cancelled => "İptal",
+            _ => status.ToString()
+        };
+    }
+}

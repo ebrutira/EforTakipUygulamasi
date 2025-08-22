@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Efor Takip Uygulaması</title>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="~/css/custom.css" rel="stylesheet" />
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="/Dashboard" style="color: white; text-decoration: none;">📊 Efor Takip Sistemi</a>
+            </div>
+            <div class="user-info">
+                <a href="/Dashboard" style="color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 1rem;">Dashboard</a>
+                <a href="/Request" style="color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 1rem;">Talepler</a>
+                <a href="/Report" style="color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 1rem;">Raporlar</a>
+                Hoş geldin, <strong>Koray</strong> | Admin
+            </div>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Scripts - önce jQuery, sonra diğerleri -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

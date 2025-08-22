@@ -1,0 +1,156 @@
+﻿@model EforTakipUygulamasi.Models.Request
+@{
+    ViewData["Title"] = "Yeni İş Ekle";
+}
+
+<div class="container">
+    <div class="modal-content" style="position: static; margin: 2rem auto; max-width: 800px;">
+        <h2>Yeni İş Ekle</h2>
+
+        <form asp-action="Create" id="workForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="form-label">İş Başlığı</label>
+                <input asp-for="Name" class="form-input" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="form-label">Açıklama</label>
+                <textarea asp-for="Description" class="form-input textarea"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Status" class="form-label">Durum</label>
+                    <select asp-for="Status" class="form-input">
+                        <option value="1">Yeni</option>
+                        <option value="2">Devam Eden</option>
+                        <option value="3">Test</option>
+                        <option value="4">Tamamlandı</option>
+                        <option value="5">İptal</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Priority" class="form-label">Öncelik</label>
+                    <select asp-for="Priority" class="form-input">
+                        <option value="1">Düşük</option>
+                        <option value="2">Orta</option>
+                        <option value="3">Yüksek</option>
+                        <option value="4">Kritik</option>
+                    </select>
+                    <span asp-validation-for="Priority" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Deadline" class="form-label">Teslim Tarihi</label>
+                    <input asp-for="Deadline" type="date" class="form-input" />
+                    <span asp-validation-for="Deadline" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="AnalystHours" class="form-label">Analiz Saati</label>
+                    <input asp-for="AnalystHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
+                    <span asp-validation-for="AnalystHours" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="DeveloperHours" class="form-label">Yazılım Saati</label>
+                    <input asp-for="DeveloperHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
+                    <span asp-validation-for="DeveloperHours" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="KKTHours" class="form-label">KKT Saati</label>
+                    <input asp-for="KKTHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
+                    <span asp-validation-for="KKTHours" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="PreprodHours" class="form-label">Preprod Saati</label>
+                    <input asp-for="PreprodHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
+                    <span asp-validation-for="PreprodHours" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="KKTDeadline" class="form-label">KKT Teslim Tarihi</label>
+                    <input asp-for="KKTDeadline" type="date" class="form-input" />
+                    <span asp-validation-for="KKTDeadline" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Toplam Saat</label>
+                    <div class="form-input" style="background: #f7fafc; font-weight: bold;" id="totalHoursDisplay">0.0</div>
+                </div>
+            </div>
+
+            <!-- Hesaplanan Değerler -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Toplam İş Günü</label>
+                    <div class="form-input" style="background: #f7fafc;" id="manDaysDisplay">0.0</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">T-Shirt Size</label>
+                    <div class="form-input" style="background: #f7fafc;" id="sizeDisplay">FastTrack</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Story Points</label>
+                    <div class="form-input" style="background: #f7fafc;" id="storyPointsDisplay">3</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                <a href="@Url.Action("Index")" class="btn btn-secondary">İptal</a>
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.15/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            calculateTotalHours();
+        });
+
+        function calculateTotalHours() {
+            const analyst = parseFloat($('[name="AnalystHours"]').val()) || 0;
+            const developer = parseFloat($('[name="DeveloperHours"]').val()) || 0;
+            const kkt = parseFloat($('[name="KKTHours"]').val()) || 0;
+            const preprod = parseFloat($('[name="PreprodHours"]').val()) || 0;
+
+            const total = analyst + developer + kkt + preprod;
+            const manDays = total / 8;
+
+            $('#totalHoursDisplay').text(total.toFixed(1));
+            $('#manDaysDisplay').text(manDays.toFixed(1));
+
+            // T-Shirt Size hesaplama
+            let size = 'FastTrack';
+            if (manDays <= 5) size = 'FastTrack';
+            else if (manDays <= 10) size = 'XS';
+            else if (manDays <= 25) size = 'S';
+            else if (manDays <= 50) size = 'M';
+            else if (manDays <= 100) size = 'L';
+            else size = 'XL';
+
+            $('#sizeDisplay').text(size);
+
+            // Story Points hesaplama
+            let points = 3;
+            if (total <= 16) points = 3;
+            else if (total <= 24) points = 5;
+            else if (total <= 30) points = 8;
+            else if (total <= 40) points = 13;
+            else points = 21;
+
+            $('#storyPointsDisplay').text(points);
+        }
+    </script>
+}

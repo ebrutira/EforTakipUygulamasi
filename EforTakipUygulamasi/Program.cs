@@ -1,18 +1,13 @@
-using EforTakipUygulamasi.Services;
+using EforTakipUygulamasi.Common;
+using EforTakipUygulamasi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Repository servisini ekle
+// Repository'yi kaydet
 builder.Services.AddScoped<IRequestRepository, JsonRequestRepository>();
-
-// Logging - detaylý log seviyesi
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
-builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 var app = builder.Build();
 
@@ -22,10 +17,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-else
-{
-    app.UseDeveloperExceptionPage();
-}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -34,6 +25,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+// Default route - Dashboard'ý ana sayfa yap
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dashboard}/{action=Index}/{id?}");

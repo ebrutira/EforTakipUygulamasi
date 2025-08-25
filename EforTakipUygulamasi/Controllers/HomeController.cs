@@ -1,21 +1,15 @@
-using System.Diagnostics;
-using EforTakipUygulamasi.Models;
 using Microsoft.AspNetCore.Mvc;
+using EforTakipUygulamasi.Models;
+using System.Diagnostics;
 
 namespace EforTakipUygulamasi.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
-
         public IActionResult Index()
         {
-            return View();
+            // Dashboard'a yönlendir
+            return RedirectToAction("Index", "Dashboard");
         }
 
         public IActionResult Privacy()
@@ -29,4 +23,4 @@ namespace EforTakipUygulamasi.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
-}
+};

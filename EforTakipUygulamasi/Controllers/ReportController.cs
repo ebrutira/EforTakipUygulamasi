@@ -1,200 +1,119 @@
-﻿using EforTakipUygulamasi.Models;
-using EforTakipUygulamasi.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using EforTakipUygulamasi.Common;
+using EforTakipUygulamasi.Models;
 using System.Text;
 
 namespace EforTakipUygulamasi.Controllers
 {
     public class ReportController : Controller
     {
-        private readonly IRequestRepository _requestRepository;
-        private readonly ILogger<ReportController> _logger;
+        private readonly IRequestRepository _repository;
 
-        public ReportController(IRequestRepository requestRepository, ILogger<ReportController> logger)
+        public ReportController(IRequestRepository repository)
         {
-            _requestRepository = requestRepository;
-            _logger = logger;
+            _repository = repository;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             try
             {
-                var requests = await _requestRepository.GetAllAsync();
-                var requestsList = requests.ToList();
+                var requests = _repository.GetAll();
 
-                var reportData = new
+                // Rapor verilerini hazırla
+                var reportData = new ReportData
                 {
-                    TotalRequests = requestsList.Count,
-                    CompletedRequests = requestsList.Count(r => r.Status == RequestStatus.Completed),
-                    InProgressRequests = requestsList.Count(r => r.Status == RequestStatus.InProgress),
-                    OverdueRequests = requestsList.Count(r => r.Deadline.HasValue && r.Deadline.Value.Date < DateTime.Today && r.Status != RequestStatus.Completed),
-                    TotalEffort = requestsList.Sum(r => r.TotalHours),
-                    AvgEffortPerRequest = requestsList.Any() ? requestsList.Average(r => r.TotalHours) : 0,
+                    TotalRequests = requests.Count,
+                    CompletedRequests = requests.Count(r => r.Status == RequestStatusEnum.Completed),
+                    InProgressRequests = requests.Count(r => r.Status == RequestStatusEnum.InProgress),
+                    OverdueRequests = requests.Count(r => r.IsOverdue),
+                    TotalHours = requests.Sum(r => r.TotalHours),
 
                     // Efor dağılımı
-                    AnalystHours = requestsList.Sum(r => r.AnalystHours),
-                    DeveloperHours = requestsList.Sum(r => r.DeveloperHours),
-                    KKTHours = requestsList.Sum(r => r.KKTHours),
-                    PreprodHours = requestsList.Sum(r => r.PreprodHours),
+                    AnalystTotalHours = requests.Sum(r => r.AnalystHours),
+                    DeveloperTotalHours = requests.Sum(r => r.DeveloperHours),
+                    KKTTotalHours = requests.Sum(r => r.KKTHours),
+                    PreprodTotalHours = requests.Sum(r => r.PreprodHours),
 
-                    // Bu ay oluşturulan talepler
-                    ThisMonthRequests = requestsList.Count(r => r.CreatedDate.Month == DateTime.Now.Month && r.CreatedDate.Year == DateTime.Now.Year),
+                    // Performans metrikleri
+                    ThisWeekCreated = requests.Count(r => r.CreatedDate >= DateTime.Now.AddDays(-7)),
+                    ThisMonthCreated = requests.Count(r => r.CreatedDate.Month == DateTime.Now.Month),
 
-                    // Bu hafta oluşturulan talepler
-                    ThisWeekRequests = requestsList.Count(r => r.CreatedDate >= DateTime.Now.AddDays(-7)),
-
-                    // En büyük işler
-                    LargestRequests = requestsList.OrderByDescending(r => r.TotalHours).Take(5).ToList(),
-
-                    // Yaklaşan deadline'lar (sadece deadline'ı olan işler)
-                    UpcomingDeadlines = requestsList
-                        .Where(r => r.Deadline.HasValue &&
-                                   r.Deadline.Value.Date >= DateTime.Today &&
-                                   r.Deadline.Value.Date <= DateTime.Today.AddDays(7) &&
-                                   r.Status != RequestStatus.Completed &&
-                                   r.Status != RequestStatus.Cancelled)
-                        .OrderBy(r => r.Deadline)
-                        .ToList()
+                    CompletionRate = requests.Count > 0 ?
+                        (requests.Count(r => r.Status == RequestStatusEnum.Completed) * 100.0 / requests.Count) : 0,
+                    OverdueRate = requests.Count > 0 ?
+                        (requests.Count(r => r.IsOverdue) * 100.0 / requests.Count) : 0
                 };
 
-                ViewBag.ReportData = reportData;
-
-                return View();
+                return View(reportData);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Raporlar yüklenirken hata oluştu");
-                TempData["ErrorMessage"] = "Raporlar yüklenirken hata oluştu: " + ex.Message;
-                return View("Error");
+                ViewBag.Error = $"Rapor yüklenirken hata: {ex.Message}";
+                return View(new ReportData());
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportData(string format = "json")
+        public IActionResult ExportData(string format = "csv")
         {
             try
             {
-                var requests = await _requestRepository.GetAllAsync();
-                var requestsList = requests.ToList();
+                var requests = _repository.GetAll();
 
-                if (format.ToLower() == "csv")
+                if (format.ToLower() == "json")
                 {
-                    var csv = GenerateCSV(requestsList);
-                    var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-                    return File(bytes, "text/csv", $"EforTakip_{DateTime.Now:yyyyMMdd_HHmm}.csv");
+                    return Json(requests);
                 }
-                else
+                else // CSV
                 {
-                    var exportData = requestsList.Select(r => new
-                    {
-                        Id = r.Id,
-                        Ad = r.Name,
-                        Aciklama = r.Description,
-                        Durum = r.Status.ToString(),
-                        Oncelik = r.Priority.ToString(),
-                        AnalistSaat = r.AnalystHours,
-                        YazilimSaat = r.DeveloperHours,
-                        KKTSaat = r.KKTHours,
-                        PreprodSaat = r.PreprodHours,
-                        ToplamSaat = r.TotalHours,
-                        AdamGun = r.TotalManDays,
-                        Buyukluk = r.Size.ToString(),
-                        StoryPoints = r.StoryPoints,
-                        Deadline = r.Deadline?.ToString("yyyy-MM-dd"),
-                        KKTDeadline = r.KKTDeadline?.ToString("yyyy-MM-dd"),
-                        Olusturan = r.CreatedBy,
-                        OlusturmaTarihi = r.CreatedDate.ToString("yyyy-MM-dd HH:mm"),
-                        SonDegisiklik = r.LastModified.ToString("yyyy-MM-dd HH:mm"),
-                        SonDegistiren = r.LastModifiedBy
-                    });
+                    var csv = new StringBuilder();
+                    csv.AppendLine("ID,Ad,Durum,Öncelik,Analist,Yazılım,KKT,Preprod,Toplam,Oluşturma,Deadline");
 
-                    var json = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
+                    foreach (var req in requests)
                     {
-                        WriteIndented = true,
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                    });
-                    var bytes = System.Text.Encoding.UTF8.GetBytes(json);
-                    return File(bytes, "application/json", $"EforTakip_{DateTime.Now:yyyyMMdd_HHmm}.json");
+                        csv.AppendLine($"{req.Id}," +
+                                     $"\"{req.Name}\"," +
+                                     $"{req.Status}," +
+                                     $"{req.Priority}," +
+                                     $"{req.AnalystHours}," +
+                                     $"{req.DeveloperHours}," +
+                                     $"{req.KKTHours}," +
+                                     $"{req.PreprodHours}," +
+                                     $"{req.TotalHours}," +
+                                     $"{req.CreatedDate:yyyy-MM-dd}," +
+                                     $"{req.Deadline?.ToString("yyyy-MM-dd") ?? ""}");
+                    }
+
+                    var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+                    return File(bytes, "text/csv", $"efor_raporu_{DateTime.Now:yyyyMMdd}.csv");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Veri export edilirken hata oluştu");
-                TempData["ErrorMessage"] = "Export işleminde hata oluştu: " + ex.Message;
-                return RedirectToAction("Index");
+                TempData["ErrorMessage"] = $"Export hatası: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
+    }
 
-        private string GenerateCSV(IEnumerable<Request> requests)
-        {
-            var csv = new StringBuilder();
+    // Rapor için veri modeli
+    public class ReportData
+    {
+        public int TotalRequests { get; set; }
+        public int CompletedRequests { get; set; }
+        public int InProgressRequests { get; set; }
+        public int OverdueRequests { get; set; }
+        public decimal TotalHours { get; set; }
 
-            // Başlık satırı - Türkçe ve düzenli
-            csv.AppendLine("TALEP_NO,TALEP_ADI,ACIKLAMA,DURUM,ONCELIK,ANALIST_SAAT,YAZILIM_SAAT,KKT_SAAT,PREPROD_SAAT,TOPLAM_SAAT,ADAM_GUN,BUYUKLUK,STORY_POINTS,DEADLINE,KKT_DEADLINE,OLUSTURAN,OLUSTURMA_TARIHI,SON_DEGISTIREN,SON_DEGISIKLIK");
+        public decimal AnalystTotalHours { get; set; }
+        public decimal DeveloperTotalHours { get; set; }
+        public decimal KKTTotalHours { get; set; }
+        public decimal PreprodTotalHours { get; set; }
 
-            foreach (var request in requests)
-            {
-                // Verileri temizle ve formatla
-                var name = CleanCsvField(request.Name);
-                var description = CleanCsvField(request.Description);
-                var status = GetStatusTextTurkish(request.Status);
-                var priority = GetPriorityTextTurkish(request.Priority);
-                var size = request.Size.ToString();
-                var deadline = request.Deadline?.ToString("dd.MM.yyyy") ?? "";
-                var kktDeadline = request.KKTDeadline?.ToString("dd.MM.yyyy") ?? "";
-                var createdBy = CleanCsvField(request.CreatedBy);
-                var lastModifiedBy = CleanCsvField(request.LastModifiedBy);
-                var createdDate = request.CreatedDate.ToString("dd.MM.yyyy HH:mm");
-                var lastModified = request.LastModified.ToString("dd.MM.yyyy HH:mm");
-
-                csv.AppendLine($"{request.Id},{name},{description},{status},{priority},{request.AnalystHours},{request.DeveloperHours},{request.KKTHours},{request.PreprodHours},{request.TotalHours:F1},{request.TotalManDays:F1},{size},{request.StoryPoints},{deadline},{kktDeadline},{createdBy},{createdDate},{lastModifiedBy},{lastModified}");
-            }
-
-            return csv.ToString();
-        }
-
-        private string CleanCsvField(string field)
-        {
-            if (string.IsNullOrEmpty(field)) return "";
-
-            // CSV için özel karakterleri temizle
-            field = field.Replace("\"", "\"\""); // Çift tırnakları escape et
-            field = field.Replace("\n", " ").Replace("\r", " "); // Satır sonlarını kaldır
-
-            // Eğer virgül, çift tırnak veya satır sonu varsa, alanı çift tırnakla sar
-            if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
-            {
-                field = $"\"{field}\"";
-            }
-
-            return field;
-        }
-
-        private string GetStatusTextTurkish(RequestStatus status)
-        {
-            return status switch
-            {
-                RequestStatus.New => "Yeni",
-                RequestStatus.InProgress => "Devam_Eden",
-                RequestStatus.Testing => "Test",
-                RequestStatus.Completed => "Tamamlandi",
-                RequestStatus.Cancelled => "Iptal",
-                _ => status.ToString()
-            };
-        }
-
-        private string GetPriorityTextTurkish(RequestPriority priority)
-        {
-            return priority switch
-            {
-                RequestPriority.Low => "Dusuk",
-                RequestPriority.Medium => "Orta",
-                RequestPriority.High => "Yuksek",
-                RequestPriority.Critical => "Kritik",
-                _ => priority.ToString()
-            };
-        }
+        public int ThisWeekCreated { get; set; }
+        public int ThisMonthCreated { get; set; }
+        public double CompletionRate { get; set; }
+        public double OverdueRate { get; set; }
     }
 }

@@ -60,15 +60,16 @@
 </div>
 
 @functions {
-    string GetStatusText(EforTakipUygulamasi.Models.RequestStatus status)
+    string GetStatusText(EforTakipUygulamasi.Common.RequestStatusEnum status)
     {
         return status switch
         {
-            EforTakipUygulamasi.Models.RequestStatus.New => "Yeni",
-            EforTakipUygulamasi.Models.RequestStatus.InProgress => "Devam Eden",
-            EforTakipUygulamasi.Models.RequestStatus.Testing => "Test",
-            EforTakipUygulamasi.Models.RequestStatus.Completed => "Tamamlandı",
-            EforTakipUygulamasi.Models.RequestStatus.Cancelled => "İptal",
+            EforTakipUygulamasi.Common.RequestStatusEnum.New => "Yeni",
+            EforTakipUygulamasi.Common.RequestStatusEnum.InProgress => "Devam Eden",
+            EforTakipUygulamasi.Common.RequestStatusEnum.Testing => "Test",
+            EforTakipUygulamasi.Common.RequestStatusEnum.OnHold => "Beklemede",
+            EforTakipUygulamasi.Common.RequestStatusEnum.Completed => "Tamamlandı",
+            EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled => "İptal",
             _ => status.ToString()
         };
     }

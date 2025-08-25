@@ -1,224 +1,156 @@
-﻿using EforTakipUygulamasi.Models;
-using EforTakipUygulamasi.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using EforTakipUygulamasi.Common;
+using EforTakipUygulamasi.Models;
 
 namespace EforTakipUygulamasi.Controllers
 {
     public class RequestController : Controller
     {
-        private readonly IRequestRepository _requestRepository;
-        private readonly ILogger<RequestController> _logger;
+        private readonly IRequestRepository _repository;
 
-        public RequestController(IRequestRepository requestRepository, ILogger<RequestController> logger)
+        public RequestController(IRequestRepository repository)
         {
-            _requestRepository = requestRepository;
-            _logger = logger;
+            _repository = repository;
         }
 
-        // GET: Request
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             try
             {
-                var requests = await _requestRepository.GetAllAsync();
+                var requests = _repository.GetAll();
                 return View(requests);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Talepler listelenirken hata oluştu");
-                return View("Error");
+                TempData["ErrorMessage"] = $"Veri yüklenirken hata: {ex.Message}";
+                return View(new List<Request>());
             }
         }
 
-        // GET: Request/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            try
-            {
-                var request = await _requestRepository.GetByIdAsync(id);
-                if (request == null)
-                {
-                    return NotFound();
-                }
-                return View(request);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Talep detayları alınırken hata oluştu: {RequestId}", id);
-                return View("Error");
-            }
-        }
-
-        // GET: Request/Create
         public IActionResult Create()
         {
-            var model = new Request
-            {
-                CreatedBy = "Koray",
-                LastModifiedBy = "Koray",
-                Status = RequestStatus.New,
-                Priority = RequestPriority.Medium
-            };
-            return View(model);
+            return View(new Request());
         }
 
-        // POST: Request/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Request request)
+        public IActionResult Create(Request request)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    request.CreatedBy = "Koray";
-                    request.LastModifiedBy = "Koray";
+                    request.Status = RequestStatusEnum.New;
+                    request.CreatedDate = DateTime.Now;
+                    request.LastModified = DateTime.Now;
+                    request.CreatedBy = "Koray"; // Şimdilik sabit
 
-                    await _requestRepository.AddAsync(request);
+                    _repository.Create(request);
 
-                    TempData["SuccessMessage"] = "Talep başarıyla oluşturuldu!";
+                    TempData["SuccessMessage"] = "İş başarıyla oluşturuldu!";
                     return RedirectToAction(nameof(Index));
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Talep oluşturulurken hata oluştu");
-                TempData["ErrorMessage"] = "Talep oluşturulurken bir hata oluştu.";
+                TempData["ErrorMessage"] = $"Kayıt sırasında hata: {ex.Message}";
             }
 
             return View(request);
         }
 
-        // GET: Request/Edit/5
-        public async Task<IActionResult> Edit(int id)
+        public IActionResult Edit(int id)
         {
             try
             {
-                var request = await _requestRepository.GetByIdAsync(id);
+                var request = _repository.GetById(id);
                 if (request == null)
                 {
-                    return NotFound();
+                    TempData["ErrorMessage"] = "İş bulunamadı.";
+                    return RedirectToAction(nameof(Index));
                 }
+
                 return View(request);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Talep düzenlenirken hata oluştu: {RequestId}", id);
-                return View("Error");
+                TempData["ErrorMessage"] = $"Hata: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
 
-        // POST: Request/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Request request)
+        public IActionResult Edit(Request request)
         {
-            if (id != request.Id)
-            {
-                return NotFound();
-            }
-
             try
             {
                 if (ModelState.IsValid)
                 {
-                    request.LastModifiedBy = "Koray";
-                    await _requestRepository.UpdateAsync(request);
+                    request.LastModified = DateTime.Now;
+                    request.LastModifiedBy = "Koray"; // Şimdilik sabit
 
-                    TempData["SuccessMessage"] = "Talep başarıyla güncellendi!";
+                    _repository.Update(request);
+
+                    TempData["SuccessMessage"] = "İş başarıyla güncellendi!";
                     return RedirectToAction(nameof(Index));
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Talep güncellenirken hata oluştu: {RequestId}", id);
-                TempData["ErrorMessage"] = "Talep güncellenirken bir hata oluştu.";
+                TempData["ErrorMessage"] = $"Güncelleme sırasında hata: {ex.Message}";
             }
 
             return View(request);
         }
 
-        // GET: Request/Delete/5
-        public async Task<IActionResult> Delete(int id)
+        public IActionResult Delete(int id)
         {
             try
             {
-                var request = await _requestRepository.GetByIdAsync(id);
+                var request = _repository.GetById(id);
                 if (request == null)
                 {
-                    return NotFound();
+                    TempData["ErrorMessage"] = "İş bulunamadı.";
+                    return RedirectToAction(nameof(Index));
                 }
+
                 return View(request);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Talep silinirken hata oluştu: {RequestId}", id);
-                return View("Error");
+                TempData["ErrorMessage"] = $"Hata: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
 
-        // POST: Request/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
             try
             {
-                await _requestRepository.DeleteAsync(id);
-                TempData["SuccessMessage"] = "Talep başarıyla silindi!";
-                return RedirectToAction(nameof(Index));
+                _repository.Delete(id);
+                TempData["SuccessMessage"] = "İş başarıyla silindi!";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Talep silinirken hata oluştu: {RequestId}", id);
-                TempData["ErrorMessage"] = "Talep silinirken bir hata oluştu.";
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = $"Silme sırasında hata: {ex.Message}";
             }
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // API endpoint for getting requests as JSON
+        // API endpoint - Dashboard için
         [HttpGet]
-        public async Task<IActionResult> GetRequestsJson()
+        public JsonResult GetAllJson()
         {
             try
             {
-                var requests = await _requestRepository.GetAllAsync();
-                var result = requests.Select(r => new
-                {
-                    id = r.Id,
-                    name = r.Name,
-                    status = r.Status.ToString(),
-                    statusText = GetStatusText(r.Status),
-                    size = r.Size.ToString(),
-                    analystHours = r.AnalystHours,
-                    developerHours = r.DeveloperHours,
-                    kktHours = r.KKTHours,
-                    preprodHours = r.PreprodHours,
-                    totalHours = r.TotalHours,
-                    deadline = r.Deadline?.ToString("yyyy-MM-dd"),
-                    deadlineFormatted = r.Deadline?.ToString("dd.MM.yyyy")
-                });
-
-                return Json(result);
+                var requests = _repository.GetAll();
+                return Json(requests);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "JSON verisi alınırken hata oluştu");
-                return BadRequest("Veri alınırken hata oluştu");
+                return Json(new { error = ex.Message });
             }
-        }
-
-        private string GetStatusText(RequestStatus status)
-        {
-            return status switch
-            {
-                RequestStatus.New => "Yeni",
-                RequestStatus.InProgress => "Devam Eden",
-                RequestStatus.Testing => "Test",
-                RequestStatus.Completed => "Tamamlandı",
-                RequestStatus.Cancelled => "İptal",
-                _ => status.ToString()
-            };
         }
     }
 }

@@ -1,160 +1,129 @@
-﻿@using EforTakipUygulamasi.Models
-@using EforTakipUygulamasi.Services
-@{
-    ViewData["Title"] = "Dashboard";
-    var stats = ViewBag.Stats as DashboardStats;
-    var recentRequests = ViewBag.RecentRequests as IEnumerable<Request>;
-    var overdueRequests = ViewBag.OverdueRequests as IEnumerable<Request>;
+﻿@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadCharts();
+        });
+
+        function loadCharts() {
+            // Request controller'dan veri al
+            $.get('/Request/GetAllJson', function(data) {
+                if (data && data.length > 0) {
+                    createStatusChart(data);
+                    createSizeChart(data);
+                    createEffortChart(data);
+                }
+            }).fail(function() {
+                console.log('Chart verileri yüklenemedi');
+            });
+        }
+
+        function createStatusChart(requests) {
+            const statusCounts = {
+                'New': requests.filter(r => r.status === 1).length,
+                'InProgress': requests.filter(r => r.status === 2).length,
+                'Testing': requests.filter(r => r.status === 3).length,
+                'Completed': requests.filter(r => r.status === 5).length
+            };
+
+            const ctx = document.getElementById('statusChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Yeni', 'Devam Eden', 'Test', 'Tamamlandı'],
+                        datasets: [{
+                            data: [statusCounts.New, statusCounts.InProgress, statusCounts.Testing, statusCounts.Completed],
+                            backgroundColor: ['#667eea', '#ffc107', '#fd7e14', '#28a745']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function createSizeChart(requests) {
+            // T-Shirt size dağılımı hesapla
+            const sizeCounts = {};
+            requests.forEach(r => {
+                const totalHours = (r.analystHours || 0) + (r.developerHours || 0) + (r.kktHours || 0) + (r.preprodHours || 0);
+                const days = totalHours / 8;
+                let size = 'FastTrack';
+                if (days <= 5) size = 'FastTrack';
+                else if (days <= 10) size = 'XS';
+                else if (days <= 25) size = 'S';
+                else if (days <= 50) size = 'M';
+                else if (days <= 100) size = 'L';
+                else size = 'XL';
+
+                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+            });
+
+            const ctx = document.getElementById('sizeChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(sizeCounts),
+                        datasets: [{
+                            label: 'İş Sayısı',
+                            data: Object.values(sizeCounts),
+                            backgroundColor: ['#28a745', '#28a745', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function createEffortChart(requests) {
+            let analystTotal = 0, devTotal = 0, kktTotal = 0, preprodTotal = 0;
+
+            requests.forEach(r => {
+                analystTotal += r.analystHours || 0;
+                devTotal += r.developerHours || 0;
+                kktTotal += r.kktHours || 0;
+                preprodTotal += r.preprodHours || 0;
+            });
+
+            const ctx = document.getElementById('effortChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Analist', 'Yazılım', 'KKT', 'Preprod'],
+                        datasets: [{
+                            label: 'Toplam Saat',
+                            data: [analystTotal, devTotal, kktTotal, preprodTotal],
+                            backgroundColor: ['#667eea', '#28a745', '#ffc107', '#fd7e14']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
 }
-
-<div class="container">
-    <!-- Dashboard Başlığı -->
-    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem;">
-        <h1 style="margin: 0; color: #2c3e50; font-size: 2rem; font-weight: 600;">📊 Efor Takip Dashboard</h1>
-        <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 1rem;">Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
-    </div>
-
-    <!-- Özet İstatistikler -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #667eea;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div style="font-size: 2.2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem;">@(stats?.TotalRequests ?? 0)</div>
-                    <div style="color: #666; font-weight: 500; font-size: 0.9rem;">Toplam İş</div>
-                </div>
-                <div style="font-size: 2rem; color: #667eea;">📋</div>
-            </div>
-        </div>
-
-        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #ffc107;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div style="font-size: 2.2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem;">@(stats?.InProgressRequests ?? 0)</div>
-                    <div style="color: #666; font-weight: 500; font-size: 0.9rem;">Devam Eden</div>
-                </div>
-                <div style="font-size: 2rem; color: #ffc107;">⚡</div>
-            </div>
-        </div>
-
-        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #28a745;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div style="font-size: 2.2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem;">@(stats?.TotalHours.ToString("F0") ?? "0")</div>
-                    <div style="color: #666; font-weight: 500; font-size: 0.9rem;">Toplam Saat</div>
-                </div>
-                <div style="font-size: 2rem; color: #28a745;">⏱️</div>
-            </div>
-        </div>
-
-        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #e74c3c;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div style="font-size: 2.2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem;">@(stats?.OverdueRequests ?? 0)</div>
-                    <div style="color: #666; font-weight: 500; font-size: 0.9rem;">Geciken</div>
-                </div>
-                <div style="font-size: 2rem; color: #e74c3c;">⚠️</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtreler -->
-    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="font-weight: 600; color: #333;">📊 Filtreler:</div>
-            <select style="padding: 0.7rem; border: 1px solid #e2e8f0; border-radius: 6px; background: white; color: #4a5568;" id="statusFilter">
-                <option value="">Tüm Durumlar</option>
-                <option value="New">Yeni</option>
-                <option value="InProgress">Devam Eden</option>
-                <option value="Testing">Test</option>
-                <option value="Completed">Tamamlandı</option>
-            </select>
-            <select style="padding: 0.7rem; border: 1px solid #e2e8f0; border-radius: 6px; background: white; color: #4a5568;" id="sizeFilter">
-                <option value="">Tüm Büyüklükler</option>
-                <option value="FastTrack">Fast Track</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-            </select>
-            <select style="padding: 0.7rem; border: 1px solid #e2e8f0; border-radius: 6px; background: white; color: #4a5568;" id="timeFilter">
-                <option value="">Tüm Zamanlar</option>
-                <option value="thisWeek">Bu Hafta</option>
-                <option value="thisMonth">Bu Ay</option>
-                <option value="lastMonth">Geçen Ay</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- Chart'lar -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-        <!-- Durum Dağılımı -->
-        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; font-weight: 600;">📊 Durum Dağılımı</h3>
-            <div style="height: 250px;">
-                <canvas id="statusChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Büyüklük Dağılımı -->
-        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; font-weight: 600;">📏 İş Büyüklüğü</h3>
-            <div style="height: 250px;">
-                <canvas id="sizeChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Efor Analizi -->
-    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-        <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem; font-weight: 600;">⏱️ Efor Dağılımı (Saatler)</h3>
-        <div style="height: 200px;">
-            <canvas id="effortChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Performans Metrikleri -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-            <h3 style="margin: 0 0 1.5rem 0; color: #2c3e50; font-size: 1.2rem; font-weight: 600;">📈 Verimlilik</h3>
-            <div style="display: grid; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
-                    <span style="color: #7f8c8d; font-weight: 500;">Toplam Adam-Gün</span>
-                    <strong style="color: #2c3e50; font-size: 1.1rem;">@((stats?.TotalHours / 8 ?? 0).ToString("F1"))</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #27ae60;">
-                    <span style="color: #7f8c8d; font-weight: 500;">Ortalama Saat/İş</span>
-                    <strong style="color: #2c3e50; font-size: 1.1rem;">@(stats?.TotalRequests > 0 ? (stats.TotalHours / stats.TotalRequests).ToString("F1") : "0")</strong>
-                </div>
-            </div>
-        </div>
-
-        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-            <h3 style="margin: 0 0 1.5rem 0; color: #2c3e50; font-size: 1.2rem; font-weight: 600;">📊 Oranlar</h3>
-            <div style="display: grid; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #f39c12;">
-                    <span style="color: #7f8c8d; font-weight: 500;">Devam Eden Oran</span>
-                    <strong style="color: #2c3e50; font-size: 1.1rem;">@((stats?.TotalRequests > 0 ? (stats.InProgressRequests * 100.0 / stats.TotalRequests) : 0).ToString("F1"))%</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #e74c3c;">
-                    <span style="color: #7f8c8d; font-weight: 500;">Geciken Oran</span>
-                    <strong style="color: #2c3e50; font-size: 1.1rem;">@((stats?.TotalRequests > 0 ? (stats.OverdueRequests * 100.0 / stats.TotalRequests) : 0).ToString("F1"))%</strong>
-                </div>
-            </div>
-        </div>
-
-        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-            <h3 style="margin: 0 0 1.5rem 0; color: #2c3e50; font-size: 1.2rem; font-weight: 600;">📅 Zaman Analizi</h3>
-            <div style="display: grid; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #9b59b6;">
-                    <span style="color: #7f8c8d; font-weight: 500;">Bu Hafta Eklenen</span>
-                    <strong style="color: #2c3e50; font-size: 1.1rem;">@((recentRequests?.Count(r => r.CreatedDate >= DateTime.Now.AddDays(-7)) ?? 0))</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #1abc9c;">
-                    <span style="color: #7f8c8d; font-weight: 500;">Bu Ay Eklenen</span>
-                    <strong style="color: #2c3e50; font-size: 1.1rem;">@((recentRequests?.Count(r => r.CreatedDate.Month == DateTime.Now.Month) ?? 0))</strong>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>

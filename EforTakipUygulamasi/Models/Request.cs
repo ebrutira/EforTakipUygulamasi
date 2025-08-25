@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using EforTakipUygulamasi.Common;
 
 namespace EforTakipUygulamasi.Models
 {
@@ -13,17 +14,16 @@ namespace EforTakipUygulamasi.Models
         public string Description { get; set; } = string.Empty;
 
         [Required]
-        public RequestStatus Status { get; set; } = RequestStatus.New;
+        public RequestStatusEnum Status { get; set; } = RequestStatusEnum.New;
 
-        public RequestPriority Priority { get; set; } = RequestPriority.Medium;
+        public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-
+        public DateTime? UpdatedDate { get; set; }
         public DateTime? Deadline { get; set; }
-
         public DateTime? KKTDeadline { get; set; }
 
-        // Efor Saatleri
+        // Efor Saatleri - View'ların kullandığı adlarla
         public decimal AnalystHours { get; set; } = 0;
         public decimal DeveloperHours { get; set; } = 0;
         public decimal KKTHours { get; set; } = 0;
@@ -31,21 +31,21 @@ namespace EforTakipUygulamasi.Models
 
         // Hesaplanan Alanlar
         public decimal TotalHours => AnalystHours + DeveloperHours + KKTHours + PreprodHours;
-        public decimal TotalManDays => TotalHours / 8; // 8 saat = 1 adam-gün
+        public decimal TotalManDays => TotalHours / 8;
 
-        public TShirtSize Size
+        public TShirtSizeEnum Size
         {
             get
             {
                 var manDays = TotalManDays;
                 return manDays switch
                 {
-                    <= 5 => TShirtSize.FastTrack,
-                    <= 10 => TShirtSize.XS,
-                    <= 25 => TShirtSize.S,
-                    <= 50 => TShirtSize.M,
-                    <= 100 => TShirtSize.L,
-                    _ => TShirtSize.XL
+                    <= 5 => TShirtSizeEnum.FastTrack,
+                    <= 10 => TShirtSizeEnum.XS,
+                    <= 25 => TShirtSizeEnum.S,
+                    <= 50 => TShirtSizeEnum.M,
+                    <= 100 => TShirtSizeEnum.L,
+                    _ => TShirtSizeEnum.XL
                 };
             }
         }
@@ -66,35 +66,11 @@ namespace EforTakipUygulamasi.Models
             }
         }
 
+        public string Assignee { get; set; } = string.Empty;
         public string CreatedBy { get; set; } = string.Empty;
         public DateTime LastModified { get; set; } = DateTime.Now;
         public string LastModifiedBy { get; set; } = string.Empty;
-    }
 
-    public enum RequestStatus
-    {
-        New = 1,
-        InProgress = 2,
-        Testing = 3,
-        Completed = 4,
-        Cancelled = 5
-    }
-
-    public enum RequestPriority
-    {
-        Low = 1,
-        Medium = 2,
-        High = 3,
-        Critical = 4
-    }
-
-    public enum TShirtSize
-    {
-        FastTrack,
-        XS,
-        S,
-        M,
-        L,
-        XL
+        public bool IsOverdue => Deadline.HasValue && Deadline.Value < DateTime.Now;
     }
 }

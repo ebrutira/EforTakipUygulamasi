@@ -28,7 +28,7 @@
             <div class="stat-label">Toplam İş</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value" id="inProgress">@Model.Count(r => r.Status == EforTakipUygulamasi.Models.RequestStatus.InProgress)</div>
+            <div class="stat-value" id="inProgress">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.InProgress)</div>
             <div class="stat-label">Devam Eden</div>
         </div>
         <div class="stat-card">
@@ -36,7 +36,7 @@
             <div class="stat-label">Toplam Saat</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value" id="overdueItems">@Model.Count(r => r.Deadline.HasValue && r.Deadline.Value.Date < DateTime.Today && r.Status != EforTakipUygulamasi.Models.RequestStatus.Completed)</div>
+            <div class="stat-value" id="overdueItems">@Model.Count(r => r.Deadline.HasValue && r.Deadline.Value.Date < DateTime.Today && r.Status != EforTakipUygulamasi.Common.RequestStatusEnum.Completed)</div>
             <div class="stat-label">Geciken</div>
         </div>
     </div>
@@ -118,29 +118,29 @@
 </div>
 
 @functions {
-    string GetStatusText(EforTakipUygulamasi.Models.RequestStatus status)
+    string GetStatusText(EforTakipUygulamasi.Common.RequestStatusEnum status)
     {
         return status switch
         {
-            EforTakipUygulamasi.Models.RequestStatus.New => "Yeni",
-            EforTakipUygulamasi.Models.RequestStatus.InProgress => "Devam Eden",
-            EforTakipUygulamasi.Models.RequestStatus.Testing => "Test",
-            EforTakipUygulamasi.Models.RequestStatus.Completed => "Tamamlandı",
-            EforTakipUygulamasi.Models.RequestStatus.Cancelled => "İptal",
+            EforTakipUygulamasi.Common.RequestStatusEnum.New => "Yeni",
+            EforTakipUygulamasi.Common.RequestStatusEnum.InProgress => "Devam Eden",
+            EforTakipUygulamasi.Common.RequestStatusEnum.Testing => "Test",
+            EforTakipUygulamasi.Common.RequestStatusEnum.Completed => "Tamamlandı",
+            EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled => "İptal",
             _ => status.ToString()
         };
     }
 
-    string GetSizeBadgeClass(EforTakipUygulamasi.Models.TShirtSize size)
+    string GetSizeBadgeClass(EforTakipUygulamasi.Common.TShirtSizeEnum size)
     {
         return size switch
         {
-            EforTakipUygulamasi.Models.TShirtSize.FastTrack => "diff-1",
-            EforTakipUygulamasi.Models.TShirtSize.XS => "diff-1",
-            EforTakipUygulamasi.Models.TShirtSize.S => "diff-2",
-            EforTakipUygulamasi.Models.TShirtSize.M => "diff-3",
-            EforTakipUygulamasi.Models.TShirtSize.L => "diff-4",
-            EforTakipUygulamasi.Models.TShirtSize.XL => "diff-5",
+            EforTakipUygulamasi.Common.TShirtSizeEnum.FastTrack => "diff-1",
+            EforTakipUygulamasi.Common.TShirtSizeEnum.XS => "diff-1",
+            EforTakipUygulamasi.Common.TShirtSizeEnum.S => "diff-2",
+            EforTakipUygulamasi.Common.TShirtSizeEnum.M => "diff-3",
+            EforTakipUygulamasi.Common.TShirtSizeEnum.L => "diff-4",
+            EforTakipUygulamasi.Common.TShirtSizeEnum.XL => "diff-5",
             _ => "diff-2"
         };
     }

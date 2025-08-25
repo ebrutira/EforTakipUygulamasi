@@ -30,21 +30,22 @@
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Durum</label>
                     <select asp-for="Status" class="form-input">
-                        <option value="1">Yeni</option>
-                        <option value="2">Devam Eden</option>
-                        <option value="3">Test</option>
-                        <option value="4">Tamamlandı</option>
-                        <option value="5">İptal</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.New">Yeni</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.InProgress">Devam Eden</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Testing">Test</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.OnHold">Beklemede</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Completed">Tamamlandı</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled">İptal</option>
                     </select>
                     <span asp-validation-for="Status" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Priority" class="form-label">Öncelik</label>
                     <select asp-for="Priority" class="form-input">
-                        <option value="1">Düşük</option>
-                        <option value="2">Orta</option>
-                        <option value="3">Yüksek</option>
-                        <option value="4">Kritik</option>
+                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Low">Düşük</option>
+                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Medium">Orta</option>
+                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.High">Yüksek</option>
+                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Critical">Kritik</option>
                     </select>
                     <span asp-validation-for="Priority" class="text-danger"></span>
                 </div>
@@ -132,9 +133,6 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.15/jquery.validate.unobtrusive.min.js"></script>
-
     <script>
         $(document).ready(function() {
             calculateTotalHours();

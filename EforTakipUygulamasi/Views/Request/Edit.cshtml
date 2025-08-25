@@ -58,17 +58,17 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="AnalystHours" class="form-label">Analiz Saati</label>
+                    <label asp-for="AnalystHours" class="form-label">Analist Saati</label>
                     <input asp-for="AnalystHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
                     <span asp-validation-for="AnalystHours" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="DeveloperHours" class="form-label">Yazılım Saati</label>
+                    <label asp-for="DeveloperHours" class="form-label">Yazılımcı Saati</label>
                     <input asp-for="DeveloperHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
                     <span asp-validation-for="DeveloperHours" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="KKTHours" class="form-label">KKT Saati</label>
+                    <label asp-for="KKTHours" class="form-label">KKT/Preprod Saati</label>
                     <input asp-for="KKTHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
                     <span asp-validation-for="KKTHours" class="text-danger"></span>
                 </div>
@@ -76,14 +76,14 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="PreprodHours" class="form-label">Preprod Saati</label>
-                    <input asp-for="PreprodHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
-                    <span asp-validation-for="PreprodHours" class="text-danger"></span>
-                </div>
-                <div class="form-group">
                     <label asp-for="KKTDeadline" class="form-label">KKT Teslim Tarihi</label>
                     <input asp-for="KKTDeadline" type="date" class="form-input" />
                     <span asp-validation-for="KKTDeadline" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Assignee" class="form-label">Atanan Kişi</label>
+                    <input asp-for="Assignee" class="form-input" />
+                    <span asp-validation-for="Assignee" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Toplam Saat</label>
@@ -91,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- Hesaplanan Değerler -->
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Toplam İş Günü</label>
@@ -102,8 +101,6 @@
                     <div class="form-input" style="background: #f7fafc;" id="sizeDisplay">@Model.Size</div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Story Points</label>
-                    <div class="form-input" style="background: #f7fafc;" id="storyPointsDisplay">@Model.StoryPoints</div>
                 </div>
             </div>
 
@@ -142,9 +139,7 @@
             const analyst = parseFloat($('[name="AnalystHours"]').val()) || 0;
             const developer = parseFloat($('[name="DeveloperHours"]').val()) || 0;
             const kkt = parseFloat($('[name="KKTHours"]').val()) || 0;
-            const preprod = parseFloat($('[name="PreprodHours"]').val()) || 0;
-
-            const total = analyst + developer + kkt + preprod;
+            const total = analyst + developer + kkt;
             const manDays = total / 8;
 
             $('#totalHoursDisplay').text(total.toFixed(1));
@@ -160,16 +155,6 @@
             else size = 'XL';
 
             $('#sizeDisplay').text(size);
-
-            // Story Points hesaplama
-            let points = 3;
-            if (total <= 16) points = 3;
-            else if (total <= 24) points = 5;
-            else if (total <= 30) points = 8;
-            else if (total <= 40) points = 13;
-            else points = 21;
-
-            $('#storyPointsDisplay').text(points);
         }
     </script>
 }

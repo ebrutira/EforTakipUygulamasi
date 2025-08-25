@@ -23,14 +23,17 @@ namespace EforTakipUygulamasi.Models
         public DateTime? Deadline { get; set; }
         public DateTime? KKTDeadline { get; set; }
 
-        // Efor Saatleri - View'ların kullandığı adlarla
-        public decimal AnalystHours { get; set; } = 0;
-        public decimal DeveloperHours { get; set; } = 0;
-        public decimal KKTHours { get; set; } = 0;
-        public decimal PreprodHours { get; set; } = 0;
+        public decimal AnalystHours { get; set; } = 0;        
+        public decimal DeveloperHours { get; set; } = 0;     
+        public decimal KKTHours { get; set; } = 0;         
 
-        // Hesaplanan Alanlar
-        public decimal TotalHours => AnalystHours + DeveloperHours + KKTHours + PreprodHours;
+        public decimal PreprodHours
+        {
+            get => 0; 
+            set { } 
+        }
+
+        public decimal TotalHours => AnalystHours + DeveloperHours + KKTHours;
         public decimal TotalManDays => TotalHours / 8;
 
         public TShirtSizeEnum Size
@@ -50,21 +53,6 @@ namespace EforTakipUygulamasi.Models
             }
         }
 
-        public int StoryPoints
-        {
-            get
-            {
-                var hours = TotalHours;
-                return hours switch
-                {
-                    <= 16 => 3,
-                    <= 24 => 5,
-                    <= 30 => 8,
-                    <= 40 => 13,
-                    _ => 21
-                };
-            }
-        }
 
         public string Assignee { get; set; } = string.Empty;
         public string CreatedBy { get; set; } = string.Empty;

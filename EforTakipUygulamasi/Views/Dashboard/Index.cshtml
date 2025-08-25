@@ -1,28 +1,402 @@
-﻿@section Scripts {
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Efor Takip Sistemi</title>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-title {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+            .dashboard-title h1 {
+                margin: 0;
+                color: #2c3e50;
+                font-size: 2rem;
+                font-weight: 600;
+            }
+
+            .dashboard-title p {
+                color: #7f8c8d;
+                margin: 0.5rem 0 0 0;
+                font-size: 1rem;
+            }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .stat-card.blue {
+                border-left: 4px solid #667eea;
+            }
+
+            .stat-card.yellow {
+                border-left: 4px solid #ffc107;
+            }
+
+            .stat-card.green {
+                border-left: 4px solid #28a745;
+            }
+
+            .stat-card.red {
+                border-left: 4px solid #e74c3c;
+            }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+            .chart-card h3 {
+                margin: 0 0 1rem 0;
+                color: #333;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+        .chart-container {
+            height: 250px;
+            position: relative;
+        }
+
+        .effort-chart {
+            grid-column: 1 / -1;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+            .metric-card h3 {
+                margin: 0 0 1.5rem 0;
+                color: #2c3e50;
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+            .metric-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .metric-item.blue {
+                border-left: 4px solid #3498db;
+            }
+
+            .metric-item.green {
+                border-left: 4px solid #27ae60;
+            }
+
+            .metric-item.orange {
+                border-left: 4px solid #f39c12;
+            }
+
+            .metric-item.red {
+                border-left: 4px solid #e74c3c;
+            }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <!-- Dashboard Başlığı -->
+        <div class="dashboard-title">
+            <h1>📊 Efor Takip Dashboard</h1>
+            <p>Son güncelleme: <span id="lastUpdate"></span></p>
+        </div>
+
+        <!-- Özet İstatistikler -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div>
+                    <div class="stat-value" id="totalRequests">-</div>
+                    <div class="stat-label">Toplam İş</div>
+                </div>
+                <div class="stat-icon">📋</div>
+            </div>
+
+            <div class="stat-card yellow">
+                <div>
+                    <div class="stat-value" id="inProgressRequests">-</div>
+                    <div class="stat-label">Devam Eden</div>
+                </div>
+                <div class="stat-icon">⚡</div>
+            </div>
+
+            <div class="stat-card green">
+                <div>
+                    <div class="stat-value" id="totalHours">-</div>
+                    <div class="stat-label">Toplam Saat</div>
+                </div>
+                <div class="stat-icon">⏱️</div>
+            </div>
+
+            <div class="stat-card red">
+                <div>
+                    <div class="stat-value" id="overdueRequests">-</div>
+                    <div class="stat-label">Geciken</div>
+                </div>
+                <div class="stat-icon">⚠️</div>
+            </div>
+        </div>
+
+        <!-- Chart'lar -->
+        <div class="charts-grid">
+            <!-- Durum Dağılımı -->
+            <div class="chart-card">
+                <h3>📊 Durum Dağılımı</h3>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Büyüklük Dağılımı -->
+            <div class="chart-card">
+                <h3>📏 İş Büyüklüğü</h3>
+                <div class="chart-container">
+                    <canvas id="sizeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Efor Analizi -->
+            <div class="chart-card effort-chart">
+                <h3>⏱️ Efor Dağılımı (Saatler)</h3>
+                <div class="chart-container">
+                    <canvas id="effortChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performans Metrikleri -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>📈 Verimlilik</h3>
+                <div class="metric-item blue">
+                    <span class="metric-label">Toplam Adam-Gün</span>
+                    <strong class="metric-value" id="totalManDays">-</strong>
+                </div>
+                <div class="metric-item green">
+                    <span class="metric-label">Ortalama Saat/İş</span>
+                    <strong class="metric-value" id="averageHours">-</strong>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>📊 Oranlar</h3>
+                <div class="metric-item orange">
+                    <span class="metric-label">Devam Eden Oran</span>
+                    <strong class="metric-value" id="inProgressRate">-</strong>
+                </div>
+                <div class="metric-item red">
+                    <span class="metric-label">Geciken Oran</span>
+                    <strong class="metric-value" id="overdueRate">-</strong>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>📅 Zaman Analizi</h3>
+                <div class="metric-item">
+                    <span class="metric-label">Bu Hafta Eklenen</span>
+                    <strong class="metric-value" id="thisWeekCount">-</strong>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Bu Ay Eklenen</span>
+                    <strong class="metric-value" id="thisMonthCount">-</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
     <script>
         $(document).ready(function() {
-            loadCharts();
+            console.log('Dashboard yükleniyor...');
+
+            // Son güncelleme zamanını göster
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('tr-TR');
+
+            loadDashboardData();
         });
 
-        function loadCharts() {
-            // Request controller'dan veri al
-            $.get('/Request/GetAllJson', function(data) {
-                if (data && data.length > 0) {
-                    createStatusChart(data);
-                    createSizeChart(data);
-                    createEffortChart(data);
-                }
-            }).fail(function() {
-                console.log('Chart verileri yüklenemedi');
-            });
+        function loadDashboardData() {
+            $.get('/Request/GetAllJson')
+                .done(function(data) {
+                    console.log('Veri alındı:', data);
+                    if (data && data.length > 0) {
+                        updateStats(data);
+                        createCharts(data);
+                    } else {
+                        console.log('Veri bulunamadı');
+                        showEmptyState();
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('API hatası:', error);
+                    showErrorState();
+                });
+        }
+
+        function updateStats(requests) {
+            const totalRequests = requests.length;
+            const inProgressRequests = requests.filter(r => r.status === 2).length;
+            const completedRequests = requests.filter(r => r.status === 5).length;
+            const totalHours = requests.reduce((sum, r) => sum + (r.totalHours || 0), 0);
+            const overdueRequests = requests.filter(r => {
+                if (!r.deadline) return false;
+                return new Date(r.deadline) < new Date() && r.status !== 5;
+            }).length;
+
+            // İstatistikleri güncelle
+            document.getElementById('totalRequests').textContent = totalRequests;
+            document.getElementById('inProgressRequests').textContent = inProgressRequests;
+            document.getElementById('totalHours').textContent = Math.round(totalHours);
+            document.getElementById('overdueRequests').textContent = overdueRequests;
+
+            // Metrikleri güncelle
+            document.getElementById('totalManDays').textContent = (totalHours / 8).toFixed(1);
+            document.getElementById('averageHours').textContent = totalRequests > 0 ? (totalHours / totalRequests).toFixed(1) : '0';
+            document.getElementById('inProgressRate').textContent = totalRequests > 0 ? (inProgressRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
+            document.getElementById('overdueRate').textContent = totalRequests > 0 ? (overdueRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
+
+            // Zaman analizi
+            const now = new Date();
+            const thisWeek = requests.filter(r => {
+                const createdDate = new Date(r.createdDate);
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                return createdDate >= weekAgo;
+            }).length;
+
+            const thisMonth = requests.filter(r => {
+                const createdDate = new Date(r.createdDate);
+                return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+            }).length;
+
+            document.getElementById('thisWeekCount').textContent = thisWeek;
+            document.getElementById('thisMonthCount').textContent = thisMonth;
+        }
+
+        function createCharts(requests) {
+            createStatusChart(requests);
+            createSizeChart(requests);
+            createEffortChart(requests);
         }
 
         function createStatusChart(requests) {
             const statusCounts = {
-                'New': requests.filter(r => r.status === 1).length,
-                'InProgress': requests.filter(r => r.status === 2).length,
-                'Testing': requests.filter(r => r.status === 3).length,
-                'Completed': requests.filter(r => r.status === 5).length
+                new: requests.filter(r => r.status === 1).length,
+                inProgress: requests.filter(r => r.status === 2).length,
+                testing: requests.filter(r => r.status === 3).length,
+                completed: requests.filter(r => r.status === 5).length
             };
 
             const ctx = document.getElementById('statusChart');
@@ -32,8 +406,10 @@
                     data: {
                         labels: ['Yeni', 'Devam Eden', 'Test', 'Tamamlandı'],
                         datasets: [{
-                            data: [statusCounts.New, statusCounts.InProgress, statusCounts.Testing, statusCounts.Completed],
-                            backgroundColor: ['#667eea', '#ffc107', '#fd7e14', '#28a745']
+                            data: [statusCounts.new, statusCounts.inProgress, statusCounts.testing, statusCounts.completed],
+                            backgroundColor: ['#667eea', '#ffc107', '#fd7e14', '#28a745'],
+                            borderWidth: 2,
+                            borderColor: '#fff'
                         }]
                     },
                     options: {
@@ -41,7 +417,11 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                position: 'bottom'
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
                             }
                         }
                     }
@@ -50,11 +430,12 @@
         }
 
         function createSizeChart(requests) {
-            // T-Shirt size dağılımı hesapla
-            const sizeCounts = {};
+            const sizeCounts = { FastTrack: 0, XS: 0, S: 0, M: 0, L: 0, XL: 0 };
+
             requests.forEach(r => {
                 const totalHours = (r.analystHours || 0) + (r.developerHours || 0) + (r.kktHours || 0) + (r.preprodHours || 0);
                 const days = totalHours / 8;
+
                 let size = 'FastTrack';
                 if (days <= 5) size = 'FastTrack';
                 else if (days <= 10) size = 'XS';
@@ -63,7 +444,7 @@
                 else if (days <= 100) size = 'L';
                 else size = 'XL';
 
-                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                sizeCounts[size]++;
             });
 
             const ctx = document.getElementById('sizeChart');
@@ -75,15 +456,23 @@
                         datasets: [{
                             label: 'İş Sayısı',
                             data: Object.values(sizeCounts),
-                            backgroundColor: ['#28a745', '#28a745', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1']
+                            backgroundColor: ['#28a745', '#28a745', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1'],
+                            borderRadius: 4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            },
+                            x: {
+                                grid: { display: false }
                             }
                         }
                     }
@@ -106,24 +495,47 @@
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Analist', 'Yazılım', 'KKT', 'Preprod'],
+                        labels: ['Analiz', 'Yazılım', 'KKT', 'Preprod'],
                         datasets: [{
                             label: 'Toplam Saat',
                             data: [analystTotal, devTotal, kktTotal, preprodTotal],
-                            backgroundColor: ['#667eea', '#28a745', '#ffc107', '#fd7e14']
+                            backgroundColor: ['#667eea', '#28a745', '#ffc107', '#fd7e14'],
+                            borderRadius: 6
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.1)' }
+                            },
+                            x: {
+                                grid: { display: false }
                             }
                         }
                     }
                 });
             }
         }
+
+        function showEmptyState() {
+            document.getElementById('totalRequests').textContent = '0';
+            document.getElementById('inProgressRequests').textContent = '0';
+            document.getElementById('totalHours').textContent = '0';
+            document.getElementById('overdueRequests').textContent = '0';
+        }
+
+        function showErrorState() {
+            document.getElementById('totalRequests').textContent = 'Hata';
+            document.getElementById('inProgressRequests').textContent = 'Hata';
+            document.getElementById('totalHours').textContent = 'Hata';
+            document.getElementById('overdueRequests').textContent = 'Hata';
+        }
     </script>
-}
+</body>
+</html>

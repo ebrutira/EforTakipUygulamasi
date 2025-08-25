@@ -20,7 +20,6 @@ namespace EforTakipUygulamasi.Controllers
             {
                 var requests = _repository.GetAll();
 
-                // Rapor verilerini hazırla
                 var reportData = new ReportData
                 {
                     TotalRequests = requests.Count,
@@ -29,13 +28,11 @@ namespace EforTakipUygulamasi.Controllers
                     OverdueRequests = requests.Count(r => r.IsOverdue),
                     TotalHours = requests.Sum(r => r.TotalHours),
 
-                    // Efor dağılımı
                     AnalystTotalHours = requests.Sum(r => r.AnalystHours),
                     DeveloperTotalHours = requests.Sum(r => r.DeveloperHours),
                     KKTTotalHours = requests.Sum(r => r.KKTHours),
                     PreprodTotalHours = requests.Sum(r => r.PreprodHours),
 
-                    // Performans metrikleri
                     ThisWeekCreated = requests.Count(r => r.CreatedDate >= DateTime.Now.AddDays(-7)),
                     ThisMonthCreated = requests.Count(r => r.CreatedDate.Month == DateTime.Now.Month),
 
@@ -65,7 +62,7 @@ namespace EforTakipUygulamasi.Controllers
                 {
                     return Json(requests);
                 }
-                else // CSV
+                else
                 {
                     var csv = new StringBuilder();
                     csv.AppendLine("ID,Ad,Durum,Öncelik,Analist,Yazılım,KKT,Preprod,Toplam,Oluşturma,Deadline");
@@ -97,23 +94,22 @@ namespace EforTakipUygulamasi.Controllers
         }
     }
 
-    // Rapor için veri modeli
     public class ReportData
     {
-        public int TotalRequests { get; set; }
-        public int CompletedRequests { get; set; }
-        public int InProgressRequests { get; set; }
-        public int OverdueRequests { get; set; }
-        public decimal TotalHours { get; set; }
+        public int TotalRequests { get; set; } = 0;
+        public int CompletedRequests { get; set; } = 0;
+        public int InProgressRequests { get; set; } = 0;
+        public int OverdueRequests { get; set; } = 0;
+        public decimal TotalHours { get; set; } = 0;
 
-        public decimal AnalystTotalHours { get; set; }
-        public decimal DeveloperTotalHours { get; set; }
-        public decimal KKTTotalHours { get; set; }
-        public decimal PreprodTotalHours { get; set; }
+        public decimal AnalystTotalHours { get; set; } = 0;
+        public decimal DeveloperTotalHours { get; set; } = 0;
+        public decimal KKTTotalHours { get; set; } = 0;
+        public decimal PreprodTotalHours { get; set; } = 0;
 
-        public int ThisWeekCreated { get; set; }
-        public int ThisMonthCreated { get; set; }
-        public double CompletionRate { get; set; }
-        public double OverdueRate { get; set; }
+        public int ThisWeekCreated { get; set; } = 0;
+        public int ThisMonthCreated { get; set; } = 0;
+        public double CompletionRate { get; set; } = 0;
+        public double OverdueRate { get; set; } = 0;
     }
 }

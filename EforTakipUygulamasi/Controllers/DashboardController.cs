@@ -19,7 +19,6 @@ namespace EforTakipUygulamasi.Controllers
             {
                 var requests = _repository.GetAll();
 
-                // Dashboard Stats hesapla
                 var stats = new DashboardStats
                 {
                     TotalRequests = requests.Count,
@@ -39,8 +38,7 @@ namespace EforTakipUygulamasi.Controllers
             }
             catch (Exception ex)
             {
-                // Debug için
-                ViewBag.Error = $"Error: {ex.Message}";
+                ViewBag.Error = $"Dashboard yüklenirken hata: {ex.Message}";
                 ViewBag.Stats = new DashboardStats();
                 ViewBag.RecentRequests = new List<Request>();
                 ViewBag.OverdueRequests = new List<Request>();

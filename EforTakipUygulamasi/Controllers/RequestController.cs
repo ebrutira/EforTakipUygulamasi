@@ -42,7 +42,7 @@ namespace EforTakipUygulamasi.Controllers
                     request.Status = RequestStatusEnum.New;
                     request.CreatedDate = DateTime.Now;
                     request.LastModified = DateTime.Now;
-                    request.CreatedBy = "Koray"; // Şimdilik sabit
+                    request.CreatedBy = "Koray";
 
                     _repository.Create(request);
 
@@ -86,7 +86,7 @@ namespace EforTakipUygulamasi.Controllers
                 if (ModelState.IsValid)
                 {
                     request.LastModified = DateTime.Now;
-                    request.LastModifiedBy = "Koray"; // Şimdilik sabit
+                    request.LastModifiedBy = "Koray";
 
                     _repository.Update(request);
 
@@ -138,7 +138,6 @@ namespace EforTakipUygulamasi.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // API endpoint - Dashboard için
         [HttpGet]
         public JsonResult GetAllJson()
         {

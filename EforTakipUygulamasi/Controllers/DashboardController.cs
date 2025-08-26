@@ -19,20 +19,18 @@ namespace EforTakipUygulamasi.Controllers
             {
                 var requests = _repository.GetAll();
 
+                // Basit istatistikler
                 var stats = new DashboardStats
                 {
                     TotalRequests = requests.Count,
                     InProgressRequests = requests.Count(r => r.Status == RequestStatusEnum.InProgress),
                     TotalHours = (double)requests.Sum(r => r.TotalHours),
-                    OverdueRequests = requests.Count(r => r.IsOverdue)
+                    OverdueRequests = requests.Count(r => r.IsOverdue &&
+                        r.Status != RequestStatusEnum.Completed &&
+                        r.Status != RequestStatusEnum.Cancelled)
                 };
 
-                var recentRequests = requests.OrderByDescending(r => r.CreatedDate).Take(10).ToList();
-                var overdueRequests = requests.Where(r => r.IsOverdue).ToList();
-
                 ViewBag.Stats = stats;
-                ViewBag.RecentRequests = recentRequests;
-                ViewBag.OverdueRequests = overdueRequests;
 
                 return View();
             }
@@ -40,8 +38,6 @@ namespace EforTakipUygulamasi.Controllers
             {
                 ViewBag.Error = $"Dashboard yüklenirken hata: {ex.Message}";
                 ViewBag.Stats = new DashboardStats();
-                ViewBag.RecentRequests = new List<Request>();
-                ViewBag.OverdueRequests = new List<Request>();
                 return View();
             }
         }

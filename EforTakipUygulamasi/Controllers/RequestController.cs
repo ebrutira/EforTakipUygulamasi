@@ -138,16 +138,28 @@ namespace EforTakipUygulamasi.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Dashboard için JSON API
         [HttpGet]
         public JsonResult GetAllJson()
         {
             try
             {
                 var requests = _repository.GetAll();
+                Console.WriteLine($"GetAllJson çağrıldı: {requests.Count} request bulundu");
+
+                // Debug için ilk request'i logla
+                if (requests.Any())
+                {
+                    var first = requests.First();
+                    Console.WriteLine($"İlk request: ID={first.Id}, Name={first.Name}, Status={first.Status}, TotalHours={first.TotalHours}");
+                }
+
                 return Json(requests);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"GetAllJson Hatası: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return Json(new { error = ex.Message });
             }
         }

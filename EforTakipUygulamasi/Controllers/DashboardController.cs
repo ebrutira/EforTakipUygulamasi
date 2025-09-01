@@ -19,7 +19,6 @@ namespace EforTakipUygulamasi.Controllers
             {
                 var requests = _repository.GetAll();
 
-                // GÜNCELLEME: Geciken → Yaklaşan hesaplaması
                 var stats = new DashboardStats
                 {
                     TotalRequests = requests.Count,
@@ -42,7 +41,6 @@ namespace EforTakipUygulamasi.Controllers
             }
         }
 
-        // YENİ: Dashboard istatistikleri için API
         [HttpGet]
         public JsonResult GetDashboardStats()
         {
@@ -61,15 +59,12 @@ namespace EforTakipUygulamasi.Controllers
                     TotalHours = requests.Sum(r => r.TotalHours),
                     TotalManDays = EffortHelper.CalculateManDays(requests.Sum(r => r.TotalHours)),
 
-                    // GÜNCELLEME: Yaklaşan deadline hesabı (aktif işlerde)
                     ApproachingDeadlines = EffortHelper.GetApproachingCount(requests),
 
-                    // Geciken sadece dashboard için
                     OverdueRequests = requests.Count(r => r.IsOverdue &&
                         r.Status != RequestStatusEnum.Completed &&
                         r.Status != RequestStatusEnum.Cancelled),
 
-                    // Aktif iş sayısı
                     ActiveRequests = requests.Count(r => r.IsActive)
                 };
 

@@ -39,7 +39,7 @@
         {
             public const string UploadPath = "wwwroot/uploads";
             public const int MaxFileSize = 10 * 1024 * 1024; // 10MB
-            public static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".png", ".jpg", ".jpeg" };
+            public static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".png", ".jpg", ".jpeg", ".csv" };
         }
     }
 }

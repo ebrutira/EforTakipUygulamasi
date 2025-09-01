@@ -31,10 +31,6 @@
             <div class="stat-label">Devam Eden</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">@Model.OverdueRequests</div>
-            <div class="stat-label">Geciken</div>
-        </div>
-        <div class="stat-card">
             <div class="stat-value">@Model.TotalHours.ToString("F0")</div>
             <div class="stat-label">Toplam Saat</div>
         </div>
@@ -83,10 +79,6 @@
                 <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
                     <span>✅ Tamamlanma Oranı:</span>
                     <strong>@Model.CompletionRate.ToString("F1")%</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>⚠️ Geciken Oranı:</span>
-                    <strong>@Model.OverdueRate.ToString("F1")%</strong>
                 </div>
             </div>
         </div>

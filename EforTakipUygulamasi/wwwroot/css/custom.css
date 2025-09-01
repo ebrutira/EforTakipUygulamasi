@@ -41,7 +41,6 @@ body {
     padding: 2rem;
 }
 
-/* TAB NAVIGATION - MODERN TASARIM */
 .tab-navigation {
     display: flex;
     gap: 4px;
@@ -94,7 +93,6 @@ body {
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 
-/* DASHBOARD STATS - MODERN KARTLAR */
 .dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -141,8 +139,17 @@ body {
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
     background-clip: text;
     margin-bottom: 8px;
+}
+
+.dashboard-title h1 {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent; 
 }
 
 .stat-label {
@@ -219,7 +226,6 @@ body {
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-/* WORK ITEMS */
 .work-items {
     background: white;
     border-radius: 12px;
@@ -268,7 +274,6 @@ body {
         color: #667eea;
     }
 
-/* STATUS BADGES - MODERN YUMUŞAK TASARIM */
 .status-badge, .inline-status-select {
     padding: 6px 12px;
     border-radius: 20px;
@@ -299,7 +304,6 @@ body {
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-/* STATUS RENKLER - PASTEL VE YUMUŞAK */
 .status-new {
     background: linear-gradient(135deg, #fef3c7, #fde68a);
     color: #92400e;
@@ -325,7 +329,6 @@ body {
     color: #b91c1c;
 }
 
-/* DIFFICULTY BADGES */
 .difficulty-badge {
     padding: 6px 12px;
     border-radius: 16px;
@@ -360,7 +363,6 @@ body {
     color: #be185d;
 }
 
-/* MAN-DAYS BADGE */
 .man-days-badge {
     background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
     color: #475569;
@@ -425,14 +427,12 @@ body {
     opacity: 0.7;
 }
 
-/* EFFORT HOURS */
 .effort-hours {
     font-size: 0.875rem;
     color: #64748b;
     font-weight: 500;
 }
 
-/* NOTIFICATIONS */
 .notification {
     position: fixed;
     top: 24px;
@@ -469,7 +469,6 @@ body {
         opacity: 1;
     }
 
-/* FORM ELEMENTS */
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -573,6 +572,20 @@ body {
         font-size: 0.8rem;
     }
 
+.file-indicator {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+    .file-indicator:hover {
+        transform: scale(1.1);
+    }
+
+    .file-indicator i {
+        color: #667eea !important;
+    }
+
 .remove-file-btn {
     background: #ef4444;
     color: white;
@@ -593,7 +606,6 @@ body {
         transform: scale(1.1);
     }
 
-/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -623,7 +635,6 @@ body {
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 }
 
-/* ANIMATIONS */
 .upload-spinner {
     width: 20px;
     height: 20px;
@@ -653,7 +664,6 @@ body {
     }
 }
 
-/* RESPONSIVE */
 @media (max-width: 1024px) {
     .table-header, .work-item {
         grid-template-columns: 2fr 1fr 1fr 1fr;

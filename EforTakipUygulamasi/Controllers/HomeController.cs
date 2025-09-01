@@ -8,8 +8,8 @@ namespace EforTakipUygulamasi.Controllers
     {
         public IActionResult Index()
         {
-            // Dashboard'a yönlendir
-            return RedirectToAction("Index", "Dashboard");
+            // Request'e yönlendir
+            return RedirectToAction("Index", "Request");
         }
 
         public IActionResult Privacy()

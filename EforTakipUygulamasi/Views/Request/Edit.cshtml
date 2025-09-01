@@ -114,57 +114,73 @@
 
             <!-- Dosya Yönetimi -->
             <div class="form-group">
-                <label class="form-label">Dosyalar</label>
+                <label class="form-label">📁 Dosya Yönetimi</label>
 
                 <!-- Mevcut Dosyalar -->
-                <div id="existingFiles" style="margin-bottom: 1rem;">
-                    <h4 style="font-size: 1rem; color: #666; margin-bottom: 0.5rem;">Mevcut Dosyalar:</h4>
-                    <div class="file-item">
-                        <div>
-                            <span class="file-name">proje_detaylari.docx</span>
-                            <span class="file-size">(245 KB)</span>
-                        </div>
-                        <button type="button" class="remove-file-btn" onclick="deleteExistingFile('proje_detaylari.docx')">×</button>
+                <div id="existingFiles" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-size: 1rem; color: #475569; margin: 0;">
+                            Mevcut Dosyalar
+                            <span id="fileCount" style="color: #667eea; font-weight: normal;">(Yükleniyor...)</span>
+                        </h4>
+                        <button type="button" onclick="loadExistingFiles()" class="btn btn-sm" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+                            <i class="fas fa-refresh"></i> Yenile
+                        </button>
                     </div>
-                    <div class="file-item">
-                        <div>
-                            <span class="file-name">teknik_sartname.pdf</span>
-                            <span class="file-size">(1.2 MB)</span>
+                    <div id="filesList" style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; background: #f8fafc;">
+                        <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                            <i class="fas fa-spinner fa-spin"></i> Dosyalar yükleniyor...
                         </div>
-                        <button type="button" class="remove-file-btn" onclick="deleteExistingFile('teknik_sartname.pdf')">×</button>
                     </div>
                 </div>
 
                 <!-- Yeni Dosya Yükleme -->
-                <div class="file-upload-area" id="fileUploadArea">
-                    <i class="fas fa-upload fa-2x" style="color: #667eea; margin-bottom: 1rem;"></i>
-                    <p>Yeni dosyalar eklemek için buraya sürükleyin veya <strong>tıklayın</strong></p>
-                    <p style="font-size: 0.8rem; color: #666;">Desteklenen formatlar: .doc, .docx, .pdf, .xls, .xlsx, .png, .jpg</p>
-                    <input type="file" id="fileInput" multiple accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg" style="display: none;">
+                <div style="border-top: 2px solid #e2e8f0; padding-top: 1.5rem;">
+                    <h4 style="font-size: 1rem; color: #475569; margin-bottom: 1rem;">Yeni Dosya Ekle</h4>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div style="text-align: center;">
+                            <i class="fas fa-cloud-upload-alt fa-3x" style="color: #667eea; margin-bottom: 1rem;"></i>
+                            <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #1e293b;">
+                                Dosyaları buraya sürükleyin veya <span style="color: #667eea;">tıklayın</span>
+                            </p>
+                            <p style="font-size: 0.875rem; color: #64748b; margin: 0;">
+                                <strong>Desteklenen formatlar:</strong> DOC, DOCX, PDF, CSV, XLS, XLSX, PNG, JPG<br>
+                                <strong>Maksimum boyut:</strong> 10MB
+                            </p>
+                        </div>
+                        <input type="file" id="fileInput" multiple accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg,.csv" style="display: none;">
+                    </div>
+                    <div class="file-list" id="newFileList"></div>
                 </div>
-                <div class="file-list" id="newFileList"></div>
             </div>
 
             <!-- Meta Bilgiler -->
-            <div class="form-row">
+            <div class="form-row" style="border-top: 2px solid #e2e8f0; padding-top: 1.5rem; margin-top: 2rem;">
                 <div class="form-group">
                     <label class="form-label">Oluşturan</label>
-                    <div class="form-input" style="background: #f7fafc;">@Model.CreatedBy</div>
+                    <div class="form-input" style="background: #f8fafc;">👤 @Model.CreatedBy</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Oluşturma Tarihi</label>
-                    <div class="form-input" style="background: #f7fafc;">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</div>
+                    <div class="form-input" style="background: #f8fafc;">📅 @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Son Değişiklik</label>
-                    <div class="form-input" style="background: #f7fafc;">@Model.LastModified.ToString("dd.MM.yyyy HH:mm")</div>
+                    <div class="form-input" style="background: #f8fafc;">⏰ @Model.LastModified.ToString("dd.MM.yyyy HH:mm")</div>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                <a href="@Url.Action("Index")" class="btn btn-secondary">İptal</a>
-                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn" style="background: #ef4444; color: white;">Sil</a>
-                <button type="submit" class="btn btn-primary">Güncelle</button>
+            <!-- Form Butonları -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> İptal
+                </a>
+                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn" style="background: #ef4444; color: white;" onclick="return confirm('Bu işi silmek istediğinizden emin misiniz?')">
+                    <i class="fas fa-trash"></i> Sil
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Güncelle
+                </button>
             </div>
         </form>
     </div>
@@ -173,9 +189,17 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Edit sayfası yüklendi, Request ID: @Model.Id');
+
+            // Sayfa yüklendiğinde çalışacak fonksiyonlar
+            loadExistingFiles();
             calculateTotalHours();
             setupFileUpload();
+            setupFormEvents();
+        });
 
+        // Form event'lerini ayarla
+        function setupFormEvents() {
             // Proje ID otomatik büyük harf
             var projectIdField = document.getElementById('ProjectId');
             if (projectIdField) {
@@ -190,8 +214,9 @@
                 input.addEventListener('change', calculateTotalHours);
                 input.addEventListener('input', calculateTotalHours);
             });
-        });
+        }
 
+        // Toplam saat hesaplama
         function calculateTotalHours() {
             var analyst = parseFloat(document.querySelector('[name="AnalystHours"]').value) || 0;
             var developer = parseFloat(document.querySelector('[name="DeveloperHours"]').value) || 0;
@@ -214,8 +239,101 @@
             document.getElementById('sizeDisplay').textContent = size;
         }
 
+        // Mevcut dosyaları yükle
+        function loadExistingFiles() {
+            console.log('Dosyalar yükleniyor...');
+
+            fetch('/Request/GetFiles?requestId=@Model.Id')
+                .then(response => {
+                    console.log('GetFiles response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('GetFiles response:', data);
+                    if (data.success) {
+                        displayExistingFiles(data.files);
+                    } else {
+                        console.error('Dosyalar yüklenemedi:', data.message);
+                        document.getElementById('fileCount').textContent = '(Hata: ' + data.message + ')';
+                        document.getElementById('filesList').innerHTML =
+                            '<div style="text-align: center; padding: 2rem; color: #ef4444;">' +
+                                '<i class="fas fa-exclamation-triangle"></i> Dosyalar yüklenemedi: ' + data.message +
+                            '</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Dosya listesi alınamadı:', error);
+                    document.getElementById('fileCount').textContent = '(Bağlantı Hatası)';
+                    document.getElementById('filesList').innerHTML =
+                        '<div style="text-align: center; padding: 2rem; color: #ef4444;">' +
+                            '<i class="fas fa-wifi"></i> Bağlantı hatası' +
+                        '</div>';
+                });
+        }
+
+        // Mevcut dosyaları görüntüle
+        function displayExistingFiles(files) {
+            var filesList = document.getElementById('filesList');
+            var fileCount = document.getElementById('fileCount');
+
+            if (files.length === 0) {
+                filesList.innerHTML =
+                    '<div style="text-align: center; padding: 2rem; color: #94a3b8;">' +
+                        '<i class="fas fa-folder-open fa-2x" style="margin-bottom: 0.5rem;"></i><br>' +
+                        'Henüz dosya yüklenmemiş' +
+                    '</div>';
+                fileCount.textContent = '(0 dosya)';
+                return;
+            }
+
+            fileCount.textContent = '(' + files.length + ' dosya)';
+            filesList.innerHTML = '';
+
+            files.forEach(function(file, index) {
+                var fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.style.cssText = 'margin-bottom: 8px; background: white; border: 1px solid #e2e8f0;';
+
+                var fileIcon = getFileIcon(file.originalName);
+                var fileSize = formatFileSize(file.fileSize);
+                var uploadDate = formatDate(file.uploadDate);
+
+                fileItem.innerHTML =
+                    '<div style="flex: 1;">' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                            '<div style="display: flex; align-items: center; gap: 8px;">' +
+                                '<i class="' + fileIcon.icon + '" style="color: ' + fileIcon.color + '; font-size: 1.2rem;"></i>' +
+                                '<span class="file-name" style="font-weight: 600;">' + file.originalName + '</span>' +
+                            '</div>' +
+                            '<div style="display: flex; gap: 6px;">' +
+                                '<button type="button" class="btn btn-sm" style="background: #3b82f6; color: white; padding: 4px 8px; font-size: 0.75rem;" onclick="downloadFile(\'' + file.fileName + '\')" title="İndir">' +
+                                    '<i class="fas fa-download"></i>' +
+                                '</button>' +
+                                '<button type="button" class="remove-file-btn" onclick="deleteExistingFile(\'' + file.fileName + '\')" title="Sil">&times;</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.8rem; color: #64748b;">' +
+                            '<span><i class="fas fa-weight"></i> ' + fileSize + '</span>' +
+                            '<span><i class="fas fa-calendar"></i> ' + uploadDate + '</span>' +
+                        '</div>' +
+                    '</div>';
+
+                filesList.appendChild(fileItem);
+            });
+        }
+
+        // Dosya indirme
+        function downloadFile(fileName) {
+            console.log('Dosya indiriliyor:', fileName);
+            var url = '/Request/DownloadFile?requestId=@Model.Id&fileName=' + encodeURIComponent(fileName);
+            window.open(url, '_blank');
+        }
+
+        // Dosya silme
         function deleteExistingFile(fileName) {
-            if (confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) {
+            if (confirm('Bu dosyayı silmek istediğinizden emin misiniz?\n\nDosya: ' + fileName)) {
+                console.log('Dosya siliniyor:', fileName);
+
                 fetch('@Url.Action("DeleteFile")', {
                     method: 'POST',
                     headers: {
@@ -226,29 +344,29 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        var fileItems = document.querySelectorAll('#existingFiles .file-item');
-                        fileItems.forEach(function(item) {
-                            if (item.querySelector('.file-name').textContent === fileName) {
-                                item.remove();
-                            }
-                        });
-                        showNotification('Dosya başarıyla silindi.', 'success');
+                        showNotification('✅ Dosya başarıyla silindi: ' + fileName, 'success');
+                        loadExistingFiles(); // Listeyi yenile
                     } else {
-                        showNotification('Dosya silinemedi: ' + data.message, 'error');
+                        showNotification('❌ Dosya silinemedi: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
-                    showNotification('Dosya silinirken hata oluştu.', 'error');
+                    console.error('Dosya silme hatası:', error);
+                    showNotification('❌ Dosya silinirken bağlantı hatası oluştu', 'error');
                 });
             }
         }
 
+        // Dosya yükleme sistemini kur
         function setupFileUpload() {
             var uploadArea = document.getElementById('fileUploadArea');
             var fileInput = document.getElementById('fileInput');
             var fileList = document.getElementById('newFileList');
 
-            if (!uploadArea || !fileInput || !fileList) return;
+            if (!uploadArea || !fileInput || !fileList) {
+                console.error('Dosya yükleme elementleri bulunamadı');
+                return;
+            }
 
             // Click to select
             uploadArea.addEventListener('click', function() {
@@ -258,6 +376,7 @@
             // File selection
             fileInput.addEventListener('change', function() {
                 handleFiles(this.files);
+                this.value = ''; // Input'u temizle
             });
 
             // Drag and drop
@@ -271,8 +390,10 @@
                 uploadArea.classList.add('dragover');
             });
 
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.classList.remove('dragover');
+            uploadArea.addEventListener('dragleave', function(e) {
+                if (!uploadArea.contains(e.relatedTarget)) {
+                    uploadArea.classList.remove('dragover');
+                }
             });
 
             uploadArea.addEventListener('drop', function(e) {
@@ -282,6 +403,7 @@
             });
 
             function handleFiles(files) {
+                console.log('Dosyalar işleniyor:', files.length);
                 Array.from(files).forEach(function(file) {
                     if (validateFile(file)) {
                         uploadFileImmediately(file);
@@ -290,16 +412,16 @@
             }
 
             function validateFile(file) {
-                var allowedTypes = ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'];
+                var allowedTypes = ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg', '.csv'];
                 var fileExtension = '.' + file.name.split('.').pop().toLowerCase();
 
                 if (allowedTypes.indexOf(fileExtension) === -1) {
-                    alert('Desteklenmeyen dosya formatı: ' + fileExtension);
+                    showNotification('❌ Desteklenmeyen dosya formatı: ' + fileExtension + '\n\nDesteklenen formatlar: ' + allowedTypes.join(', '), 'error');
                     return false;
                 }
 
                 if (file.size > 10 * 1024 * 1024) { // 10MB
-                    alert('Dosya boyutu 10MB\'dan büyük olamaz.');
+                    showNotification('❌ Dosya boyutu çok büyük: ' + formatFileSize(file.size) + '\n\nMaksimum boyut: 10MB', 'error');
                     return false;
                 }
 
@@ -307,20 +429,31 @@
             }
 
             function uploadFileImmediately(file) {
+                console.log('Dosya yükleniyor:', file.name, file.size);
+
                 var formData = new FormData();
                 formData.append('file', file);
                 formData.append('requestId', '@Model.Id');
 
                 // Show progress
+                var progressId = 'upload-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                 var progressItem = document.createElement('div');
                 progressItem.className = 'file-item';
-                progressItem.id = 'upload-' + file.name;
+                progressItem.id = progressId;
+                progressItem.style.cssText = 'margin-bottom: 8px; background: #f0f9ff; border: 2px solid #0ea5e9;';
                 progressItem.innerHTML =
-                    '<div>' +
-                        '<span class="file-name">' + file.name + '</span>' +
-                        '<span class="file-size">Yükleniyor...</span>' +
-                    '</div>' +
-                    '<div class="upload-spinner"></div>';
+                    '<div style="flex: 1;">' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                            '<div style="display: flex; align-items: center; gap: 8px;">' +
+                                '<div class="upload-spinner"></div>' +
+                                '<span class="file-name" style="font-weight: 600;">' + file.name + '</span>' +
+                            '</div>' +
+                            '<span style="color: #0ea5e9; font-weight: 600; font-size: 0.8rem;">YÜKLENIYOR</span>' +
+                        '</div>' +
+                        '<div style="color: #0369a1; font-size: 0.8rem; margin-top: 4px;">' +
+                            '<i class="fas fa-upload"></i> ' + formatFileSize(file.size) + ' yükleniyor...' +
+                        '</div>' +
+                    '</div>';
 
                 fileList.appendChild(progressItem);
 
@@ -328,41 +461,88 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Upload response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Upload response:', data);
                     progressItem.remove();
-                    if (data.success) {
-                        // Add to existing files section
-                        var existingFiles = document.getElementById('existingFiles');
-                        var newFileItem = document.createElement('div');
-                        newFileItem.className = 'file-item';
-                        newFileItem.innerHTML =
-                            '<div>' +
-                                '<span class="file-name">' + data.fileName + '</span>' +
-                                '<span class="file-size">(Yeni)</span>' +
-                            '</div>' +
-                            '<button type="button" class="remove-file-btn" onclick="deleteExistingFile(\'' + data.fileName + '\')">×</button>';
 
-                        existingFiles.appendChild(newFileItem);
-                        showNotification('Dosya başarıyla yüklendi.', 'success');
+                    if (data.success) {
+                        showNotification('✅ Dosya başarıyla yüklendi: ' + data.fileName, 'success');
+                        loadExistingFiles(); // Listeyi yenile
                     } else {
-                        showNotification('Dosya yüklenemedi: ' + data.message, 'error');
+                        showNotification('❌ Dosya yüklenemedi: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
+                    console.error('Upload hatası:', error);
                     progressItem.remove();
-                    showNotification('Dosya yüklenirken hata oluştu.', 'error');
+                    showNotification('❌ Dosya yüklenirken bağlantı hatası oluştu', 'error');
                 });
             }
         }
 
+        // Yardımcı fonksiyonlar
+        function getFileIcon(fileName) {
+            var extension = fileName.split('.').pop().toLowerCase();
+
+            switch(extension) {
+                case 'pdf':
+                    return { icon: 'fas fa-file-pdf', color: '#ef4444' };
+                case 'doc':
+                case 'docx':
+                    return { icon: 'fas fa-file-word', color: '#2563eb' };
+                case 'xls':
+                case 'xlsx':
+                    return { icon: 'fas fa-file-excel', color: '#16a34a' };
+                case 'png':
+                case 'jpg':
+                case 'jpeg':
+                    return { icon: 'fas fa-file-image', color: '#7c3aed' };
+                case 'csv':
+                    return { icon: 'fas fa-file-csv', color: '#f59e0b' };
+                default:
+                    return { icon: 'fas fa-file', color: '#64748b' };
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            var k = 1024;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateString) {
+            var date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         function showNotification(message, type) {
+            // Eski notification'ları temizle
+            var existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(function(notif) {
+                notif.remove();
+            });
+
             var notification = document.createElement('div');
             notification.className = 'notification show';
             notification.style.background = type === 'success' ?
                 'linear-gradient(135deg, #10b981, #059669)' :
                 'linear-gradient(135deg, #ef4444, #dc2626)';
-            notification.innerHTML = '<button class="close-btn" onclick="this.parentElement.remove()">&times;</button><span>' + message + '</span>';
+            notification.style.whiteSpace = 'pre-line'; // Çok satırlı mesajlar için
+            notification.innerHTML =
+                '<button class="close-btn" onclick="this.parentElement.remove()">&times;</button>' +
+                '<span>' + message + '</span>';
 
             document.body.appendChild(notification);
 
@@ -370,7 +550,7 @@
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
                 }
-            }, 3000);
+            }, 5000);
         }
     </script>
 }

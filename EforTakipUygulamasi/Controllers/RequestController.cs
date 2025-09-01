@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EforTakipUygulamasi.Common;
 using EforTakipUygulamasi.Models;
+using System.IO;
 
 namespace EforTakipUygulamasi.Controllers
 {
@@ -149,7 +150,6 @@ namespace EforTakipUygulamasi.Controllers
             return View(request);
         }
 
-
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -254,43 +254,246 @@ namespace EforTakipUygulamasi.Controllers
             }
         }
 
-        // YENİ: Dosya upload endpoint (placeholder)
+        // ====== DOSYA YÖNETİMİ METHOD'LARI ======
+
         [HttpPost]
-        public JsonResult UploadFile(int requestId, IFormFile file)
+        public async Task<JsonResult> UploadFile(int requestId, IFormFile file)
         {
             try
             {
-                // Şimdilik mock response
+                Console.WriteLine($"UploadFile çağrıldı: RequestId={requestId}, FileName={file?.FileName}");
+
+                if (file == null || file.Length == 0)
+                {
+                    return Json(new { success = false, message = "Dosya seçilmedi." });
+                }
+
+                // Dosya boyutu kontrolü (10MB)
+                if (file.Length > 10 * 1024 * 1024)
+                {
+                    return Json(new { success = false, message = "Dosya boyutu 10MB'dan büyük olamaz." });
+                }
+
+                // Dosya uzantısı kontrolü
+                var allowedExtensions = new[] { ".doc", ".docx", ".pdf", ".xls", ".xlsx", ".png", ".jpg", ".jpeg", ".csv" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return Json(new { success = false, message = $"Desteklenmeyen dosya formatı: {fileExtension}" });
+                }
+
+                // Upload klasörü oluştur
+                var uploadsFolder = Path.Combine("wwwroot", "uploads", requestId.ToString());
+                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), uploadsFolder);
+
+                if (!Directory.Exists(fullPath))
+                {
+                    Directory.CreateDirectory(fullPath);
+                    Console.WriteLine($"Klasör oluşturuldu: {fullPath}");
+                }
+
+                // Dosya adını güvenli hale getir
+                var fileName = Path.GetFileName(file.FileName);
+                var safeName = Path.GetFileNameWithoutExtension(fileName) + "_" + DateTime.Now.Ticks + fileExtension;
+                var filePath = Path.Combine(fullPath, safeName);
+
+                // Dosyayı kaydet
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                Console.WriteLine($"Dosya kaydedildi: {filePath} (Boyut: {file.Length} bytes)");
+
                 return Json(new
                 {
                     success = true,
-                    fileName = file.FileName,
-                    message = "Dosya başarıyla yüklendi (mock)"
+                    fileName = fileName,
+                    safeName = safeName,
+                    message = "Dosya başarıyla yüklendi.",
+                    fileSize = file.Length
                 });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                Console.WriteLine($"Dosya yükleme hatası: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = $"Dosya yüklenirken hata: {ex.Message}" });
             }
         }
 
-        // YENİ: Dosya silme endpoint (placeholder)
         [HttpPost]
         public JsonResult DeleteFile(int requestId, string fileName)
         {
             try
             {
-                // Şimdilik mock response
-                return Json(new
+                Console.WriteLine($"DeleteFile çağrıldı: RequestId={requestId}, FileName={fileName}");
+
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", requestId.ToString());
+
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    success = true,
-                    message = "Dosya başarıyla silindi (mock)"
+                    Console.WriteLine($"Klasör bulunamadı: {uploadsFolder}");
+                    return Json(new { success = false, message = "Upload klasörü bulunamadı." });
+                }
+
+                // Dosyayı bul (güvenli dosya adları için pattern matching)
+                var files = Directory.GetFiles(uploadsFolder, "*", SearchOption.TopDirectoryOnly);
+                var fileToDelete = files.FirstOrDefault(f =>
+                {
+                    var fileNameOnly = Path.GetFileName(f);
+                    var originalName = ExtractOriginalName(fileNameOnly);
+                    return originalName.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
+                           fileNameOnly.Contains(Path.GetFileNameWithoutExtension(fileName));
                 });
+
+                if (fileToDelete != null && System.IO.File.Exists(fileToDelete))
+                {
+                    System.IO.File.Delete(fileToDelete);
+                    Console.WriteLine($"Dosya silindi: {fileToDelete}");
+
+                    return Json(new { success = true, message = "Dosya başarıyla silindi." });
+                }
+                else
+                {
+                    Console.WriteLine($"Silinecek dosya bulunamadı: {fileName}");
+                    var existingFiles = string.Join(", ", files.Select(Path.GetFileName));
+                    Console.WriteLine($"Mevcut dosyalar: {existingFiles}");
+
+                    return Json(new { success = false, message = "Dosya bulunamadı." });
+                }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Dosya silme hatası: {ex.Message}");
+                return Json(new { success = false, message = $"Dosya silinirken hata: {ex.Message}" });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetFiles(int requestId)
+        {
+            try
+            {
+                Console.WriteLine($"GetFiles çağrıldı: RequestId={requestId}");
+
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", requestId.ToString());
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Console.WriteLine($"Upload klasörü yok: {uploadsFolder}");
+                    return Json(new { success = true, files = new List<object>() });
+                }
+
+                var files = Directory.GetFiles(uploadsFolder)
+                    .Select(filePath => {
+                        var fileInfo = new FileInfo(filePath);
+                        var fileName = Path.GetFileName(filePath);
+                        var originalName = ExtractOriginalName(fileName);
+
+                        return new
+                        {
+                            fileName = fileName,
+                            originalName = originalName,
+                            fileSize = fileInfo.Length,
+                            uploadDate = fileInfo.CreationTime
+                        };
+                    })
+                    .OrderByDescending(f => f.uploadDate)
+                    .ToList();
+
+                Console.WriteLine($"Bulunan dosya sayısı: {files.Count}");
+                foreach (var file in files)
+                {
+                    Console.WriteLine($"  - {file.originalName} ({file.fileSize} bytes)");
+                }
+
+                return Json(new { success = true, files });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Dosya listesi alınamadı: {ex.Message}");
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpGet]
+        public IActionResult DownloadFile(int requestId, string fileName)
+        {
+            try
+            {
+                Console.WriteLine($"DownloadFile çağrıldı: RequestId={requestId}, FileName={fileName}");
+
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", requestId.ToString());
+                var files = Directory.GetFiles(uploadsFolder, "*", SearchOption.TopDirectoryOnly);
+
+                var fileToDownload = files.FirstOrDefault(f =>
+                {
+                    var fileNameOnly = Path.GetFileName(f);
+                    var originalName = ExtractOriginalName(fileNameOnly);
+                    return originalName.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
+                           fileNameOnly.Contains(Path.GetFileNameWithoutExtension(fileName));
+                });
+
+                if (fileToDownload != null && System.IO.File.Exists(fileToDownload))
+                {
+                    var fileBytes = System.IO.File.ReadAllBytes(fileToDownload);
+                    var originalName = ExtractOriginalName(Path.GetFileName(fileToDownload));
+                    var contentType = GetContentType(originalName);
+
+                    Console.WriteLine($"Dosya indiriliyor: {fileToDownload} -> {originalName}");
+
+                    return File(fileBytes, contentType, originalName);
+                }
+
+                Console.WriteLine($"İndirilecek dosya bulunamadı: {fileName}");
+                return NotFound("Dosya bulunamadı.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Dosya indirme hatası: {ex.Message}");
+                return BadRequest($"Hata: {ex.Message}");
+            }
+        }
+
+        // ====== HELPER METHODS ======
+
+        private string ExtractOriginalName(string safeName)
+        {
+            try
+            {
+                // "document_637892345678901234.pdf" -> "document.pdf"
+                var lastUnderscoreIndex = safeName.LastIndexOf('_');
+                if (lastUnderscoreIndex > 0)
+                {
+                    var nameWithoutTicks = safeName.Substring(0, lastUnderscoreIndex);
+                    var extension = Path.GetExtension(safeName);
+                    return nameWithoutTicks + extension;
+                }
+                return safeName;
+            }
+            catch
+            {
+                return safeName;
+            }
+        }
+
+        private string GetContentType(string fileName)
+        {
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return extension switch
+            {
+                ".pdf" => "application/pdf",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".png" => "image/png",
+                ".csv" => "text/csv", 
+                ".jpg" or ".jpeg" => "image/jpeg",
+                _ => "application/octet-stream"
+            };
         }
     }
 }

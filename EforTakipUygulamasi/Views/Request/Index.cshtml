@@ -1,9 +1,20 @@
 ﻿@model IEnumerable<EforTakipUygulamasi.Models.Request>
 @{
-    ViewData["Title"] = "Talepler";
+    ViewData["Title"] = ViewBag.PageTitle ?? "Talepler";
+    var isActivePage = (bool)(ViewBag.IsActivePage ?? false);
 }
 
 <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <a href="@Url.Action("Index")" class="tab-button @(!isActivePage ? "active" : "")">
+            📋 Talepler
+        </a>
+        <a href="@Url.Action("Active")" class="tab-button @(isActivePage ? "active" : "")">
+            ⚡ Aktif Talepler
+        </a>
+    </div>
+
     <!-- Başarı/Hata Mesajları -->
     @if (TempData["SuccessMessage"] != null)
     {
@@ -25,51 +36,79 @@
     <div class="dashboard-stats">
         <div class="stat-card">
             <div class="stat-value" id="totalItems">@Model.Count()</div>
-            <div class="stat-label">Toplam İş</div>
+            <div class="stat-label">@(isActivePage ? "Aktif İş" : "Toplam İş")</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value" id="inProgress">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.InProgress)</div>
-            <div class="stat-label">Devam Eden</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="totalHours">@Model.Sum(r => r.TotalHours).ToString("F0")</div>
-            <div class="stat-label">Toplam Saat</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="overdueItems">@Model.Count(r => r.Deadline.HasValue && r.Deadline.Value.Date < DateTime.Today && r.Status != EforTakipUygulamasi.Common.RequestStatusEnum.Completed)</div>
-            <div class="stat-label">Geciken</div>
-        </div>
+        @if (isActivePage)
+        {
+            <div class="stat-card">
+                <div class="stat-value" id="inProgress">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.InProgress)</div>
+                <div class="stat-label">Devam Eden</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="testing">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Testing)</div>
+                <div class="stat-label">Test</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalManDays">@(Math.Round(Model.Sum(r => r.TotalHours) / 8, 1))</div>
+                <div class="stat-label">Toplam Adam-Gün</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="approachingItems">@Model.Count(r => r.Deadline.HasValue && (r.Deadline.Value.Date - DateTime.Today).Days <= 14 && (r.Deadline.Value.Date - DateTime.Today).Days >= 0)</div>
+                <div class="stat-label">Yaklaşan Deadline</div>
+            </div>
+        }
+        else
+        {
+            <div class="stat-card">
+                <div class="stat-value" id="pending">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.New)</div>
+                <div class="stat-label">Bekleyen</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completed">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Completed)</div>
+                <div class="stat-label">Tamamlandı</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="cancelled">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled)</div>
+                <div class="stat-label">İptal</div>
+            </div>
+        }
     </div>
 
     <!-- Controls -->
     <div class="controls">
         <div class="filter-group">
-            <!-- Sıralama seçeneği -->
             <select class="select" id="sortSelect">
-                <option value="smart">Akıllı Sıralama</option>
-                <option value="deadline">Teslim Tarihine Göre</option>
-                <option value="size">İş Büyüklüğüne Göre</option>
-                <option value="priority">Önceliğe Göre</option>
-                <option value="name">İsme Göre</option>
+                @if (isActivePage)
+                {
+                    <option value="deadline">Teslim Tarihine Göre</option>
+                    <option value="priority">Önceliğe Göre</option>
+                    <option value="size">İş Büyüklüğüne Göre</option>
+                    <option value="name">İsme Göre</option>
+                }
+                else
+                {
+                    <option value="smart">Akıllı Sıralama</option>
+                    <option value="status">Duruma Göre</option>
+                    <option value="date">Tarihe Göre</option>
+                    <option value="name">İsme Göre</option>
+                }
             </select>
 
             <select class="select" id="statusFilter">
                 <option value="">Tüm Durumlar</option>
-                <option value="New">Yeni</option>
-                <option value="InProgress">Devam Eden</option>
-                <option value="Testing">Test</option>
-                <option value="Completed">Tamamlandı</option>
-                <option value="Cancelled">İptal</option>
+                @if (isActivePage)
+                {
+                    <option value="2">Devam Eden</option>
+                    <option value="3">Test</option>
+                }
+                else
+                {
+                    <option value="1">Bekleyen</option>
+                    <option value="5">Tamamlandı</option>
+                    <option value="6">İptal</option>
+                }
             </select>
-            <select class="select" id="sizeFilter">
-                <option value="">Tüm Büyüklükler</option>
-                <option value="FastTrack">Fast Track</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-            </select>
+
             <input type="text" class="input" placeholder="İş ara..." id="searchInput">
         </div>
         <a href="@Url.Action("Create")" class="btn btn-primary">+ Yeni İş Ekle</a>
@@ -78,13 +117,20 @@
     <!-- Work Items Table -->
     <div class="work-items">
         <div class="table-header">
-            <div>İş Başlığı</div>
+            <div>Proje ID / İş Başlığı</div>
             <div>Durum</div>
             <div>İş Büyüklüğü</div>
             <div>Analiz</div>
             <div>Yazılım</div>
-            <div>KKT/Preprod</div>
-            <div>Toplam</div>
+            <div>KKT</div>
+            @if (isActivePage)
+            {
+                <div>Adam-Gün</div>
+            }
+            else
+            {
+                <div>Toplam Saat</div>
+            }
             <div>Teslim Tarihi</div>
         </div>
         <div id="workItemsList">
@@ -93,19 +139,36 @@
                 @foreach (var request in Model)
                 {
                     <div class="work-item"
+                         data-id="@request.Id"
                          data-status="@((int)request.Status)"
                          data-priority="@((int)request.Priority)"
                          data-deadline="@(request.Deadline?.ToString("yyyy-MM-dd") ?? "")"
                          data-total-hours="@request.TotalHours"
                          data-name="@request.Name"
+                         data-project-id="@(request.ProjectId ?? "")"
                          data-description="@(request.Description ?? "")"
                          data-assignee="@(request.Assignee ?? "")"
                          onclick="editRequest(@request.Id)">
-                        <div class="work-title">@request.Name</div>
-                        <div>
-                            <span class="status-badge status-@request.Status.ToString().ToLower()">
-                                @GetStatusText(request.Status)
-                            </span>
+                        <div class="work-title">
+                            @if (!string.IsNullOrEmpty(request.ProjectId))
+                            {
+                                <div style="font-size: 0.8rem; color: #667eea; font-weight: bold; margin-bottom: 0.2rem;">
+                                    #@request.ProjectId
+                                </div>
+                            }
+                            @request.Name
+                        </div>
+                        <div onclick="event.stopPropagation();">
+                            <select class="inline-status-select" onchange="changeStatus(@request.Id, this.value)">
+                                @{
+                                    var currentStatus = (int)request.Status;
+                                }
+                                <option value="1" selected="@(currentStatus == 1 ? "selected" : null)">Bekleyen</option>
+                                <option value="2" selected="@(currentStatus == 2 ? "selected" : null)">Devam Eden</option>
+                                <option value="3" selected="@(currentStatus == 3 ? "selected" : null)">Test</option>
+                                <option value="5" selected="@(currentStatus == 5 ? "selected" : null)">Tamamlandı</option>
+                                <option value="6" selected="@(currentStatus == 6 ? "selected" : null)">İptal</option>
+                            </select>
                         </div>
                         <div>
                             <span class="difficulty-badge @GetSizeBadgeClass(request.Size)">
@@ -114,9 +177,16 @@
                         </div>
                         <div class="effort-hours">@request.AnalystHours.ToString("F1")h</div>
                         <div class="effort-hours">@request.DeveloperHours.ToString("F1")h</div>
-                        <div class="effort-hours">@((request.KKTHours + request.PreprodHours).ToString("F1"))h</div>
-                        <div class="effort-hours"><strong>@request.TotalHours.ToString("F1")h</strong></div>
-                        <div class="deadline @GetDeadlineClass(request.Deadline) @(request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Completed || request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled ? "completed-task" : "")">
+                        <div class="effort-hours">@request.KKTHours.ToString("F1")h</div>
+                        @if (isActivePage)
+                        {
+                            <div class="man-days-badge">@Math.Round(request.TotalHours / 8, 1) gün</div>
+                        }
+                        else
+                        {
+                            <div class="effort-hours"><strong>@request.TotalHours.ToString("F1")h</strong></div>
+                        }
+                        <div class="deadline @GetDeadlineClass(request.Deadline) @((request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Completed || request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled) ? "completed-task" : "")">
                             @(request.Deadline?.ToString("dd.MM.yyyy") ?? "-")
                         </div>
                     </div>
@@ -126,7 +196,7 @@
             {
                 <div style="text-align: center; padding: 3rem; color: #999;">
                     <i class="fas fa-inbox fa-3x" style="margin-bottom: 1rem;"></i>
-                    <p>Henüz iş bulunmuyor.</p>
+                    <p>@(isActivePage ? "Aktif iş bulunmuyor." : "Henüz iş bulunmuyor.")</p>
                     <a href="@Url.Action("Create")" class="btn btn-primary" style="margin-top: 1rem;">İlk İşi Oluştur</a>
                 </div>
             }
@@ -135,20 +205,6 @@
 </div>
 
 @functions {
-    string GetStatusText(EforTakipUygulamasi.Common.RequestStatusEnum status)
-    {
-        return status switch
-        {
-            EforTakipUygulamasi.Common.RequestStatusEnum.New => "Yeni",
-            EforTakipUygulamasi.Common.RequestStatusEnum.InProgress => "Devam Eden",
-            EforTakipUygulamasi.Common.RequestStatusEnum.Testing => "Test",
-            EforTakipUygulamasi.Common.RequestStatusEnum.OnHold => "Beklemede",
-            EforTakipUygulamasi.Common.RequestStatusEnum.Completed => "Tamamlandı",
-            EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled => "İptal",
-            _ => status.ToString()
-        };
-    }
-
     string GetSizeBadgeClass(EforTakipUygulamasi.Common.TShirtSizeEnum size)
     {
         return size switch
@@ -165,174 +221,175 @@
 
     string GetDeadlineClass(DateTime? deadline)
     {
-        if (!deadline.HasValue) return "normal";
+        if (!deadline.HasValue) return "deadline-normal";
 
-        var today = DateTime.Today;
-        var diffDays = (deadline.Value.Date - today).Days;
+        var diffDays = (deadline.Value.Date - DateTime.Today).Days;
 
-        if (diffDays < 0) return "overdue";      // Kırmızı - Gecikmiş
-        if (diffDays <= 3) return "critical";    // Turuncu - 0-3 gün
-        if (diffDays <= 7) return "warning";     // Sarı - 4-7 gün
-        return "normal";                         // Yeşil - 7+ gün
+        if (diffDays < 0) return "deadline-overdue";
+        if (diffDays <= 14) return "deadline-critical";
+        if (diffDays <= 28) return "deadline-warning";
+        if (diffDays <= 42) return "deadline-caution";
+        return "deadline-normal";
     }
 }
 
 @section Scripts {
-    <style>
-        /* Deadline renk geçişleri - aktif işler için */
-        .deadline.overdue:not(.completed-task) {
-            color: #dc2626;
-            font-weight: 700;
-            background: linear-gradient(90deg, #fee2e2, transparent);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border-left: 3px solid #dc2626;
-        }
-
-        .deadline.critical:not(.completed-task) {
-            color: #ea580c;
-            font-weight: 600;
-            background: linear-gradient(90deg, #fed7aa, transparent);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border-left: 3px solid #ea580c;
-        }
-
-        .deadline.warning:not(.completed-task) {
-            color: #d97706;
-            font-weight: 500;
-            background: linear-gradient(90deg, #fef3c7, transparent);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border-left: 3px solid #d97706;
-        }
-
-        .deadline.normal:not(.completed-task) {
-            color: #059669;
-            background: linear-gradient(90deg, #d1fae5, transparent);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border-left: 3px solid #059669;
-        }
-
-        /* Tamamlanan işlerin deadline'ı için - GRİ */
-        .deadline.completed-task {
-            color: #6b7280 !important;
-            font-weight: normal !important;
-            background: none !important;
-            border: none !important;
-            opacity: 0.7;
-        }
-    </style>
-
     <script>
-        $(document).ready(function() {
-            // Sayfa yüklendiğinde sıralama uygula
+        document.addEventListener('DOMContentLoaded', function() {
             applySorting();
+            document.getElementById('sortSelect').addEventListener('change', filterAndSort);
+            document.getElementById('statusFilter').addEventListener('change', filterAndSort);
+            document.getElementById('searchInput').addEventListener('input', filterAndSort);
 
-            // Sıralama değiştiğinde
-            $('#sortSelect').on('change', applySorting);
-
-            // Filtreleme ve arama
-            $('#statusFilter, #sizeFilter').on('change', filterItems);
-            $('#searchInput').on('input', filterItems);
-
-            // Otomatik notification gizleme
             setTimeout(function() {
-                $('.notification').removeClass('show');
+                var notifications = document.getElementsByClassName('notification');
+                for(var i = 0; i < notifications.length; i++) {
+                    notifications[i].classList.remove('show');
+                }
             }, 3000);
         });
 
+        function changeStatus(requestId, newStatus) {
+            fetch('@Url.Action("ChangeStatus")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + requestId + '&newStatus=' + newStatus
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    if (data.needsPageRefresh) {
+                        setTimeout(function() { location.reload(); }, 1500);
+                    }
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Durum güncellenirken hata oluştu.', 'error');
+            });
+        }
+
+        function showNotification(message, type) {
+            var notification = document.createElement('div');
+            notification.className = 'notification show';
+            notification.style.background = type === 'success' ? '#48bb78' : '#e53e3e';
+            notification.innerHTML = '<button class="close-btn" onclick="this.parentElement.remove()">&times;</button><span>' + message + '</span>';
+
+            document.body.appendChild(notification);
+
+            setTimeout(function() {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
         function applySorting() {
-            const sortType = $('#sortSelect').val();
-            var $workItems = $('.work-item');
+            const sortType = document.getElementById('sortSelect').value;
+            const isActivePage = @Html.Raw(Json.Serialize(isActivePage));
+
+            var workItems = document.querySelectorAll('.work-item');
             var items = [];
 
-            // Tüm item'ları topla
-            $workItems.each(function() {
-                var $this = $(this);
+            workItems.forEach(function(item) {
                 items.push({
-                    element: $this,
-                    status: parseInt($this.data('status')),
-                    priority: parseInt($this.data('priority')),
-                    deadline: $this.data('deadline'),
-                    totalHours: parseFloat($this.data('total-hours') || 0),
-                    name: $this.data('name')
+                    element: item,
+                    status: parseInt(item.getAttribute('data-status')),
+                    priority: parseInt(item.getAttribute('data-priority')),
+                    deadline: item.getAttribute('data-deadline'),
+                    totalHours: parseFloat(item.getAttribute('data-total-hours') || 0),
+                    name: item.getAttribute('data-name'),
+                    projectId: item.getAttribute('data-project-id')
                 });
             });
 
-            // Sıralama mantığı
             items.sort(function(a, b) {
-                // 1. İPTAL VE TAMAMLANAN İŞLER HER ZAMAN EN ALTA
-                var aFinished = (a.status === 5 || a.status === 6); // Completed veya Cancelled
-                var bFinished = (b.status === 5 || b.status === 6);
-
-                if (aFinished && !bFinished) return 1;  // a en alta
-                if (!aFinished && bFinished) return -1; // b en alta
-
-                // 2. Aktif işler için seçilen sıralamayı uygula
-                if (!aFinished && !bFinished) {
+                if (isActivePage) {
                     switch (sortType) {
                         case 'deadline':
                             return compareByDeadline(a, b);
+                        case 'priority':
+                            return b.priority - a.priority;
                         case 'size':
                             return compareBySize(a, b);
-                        case 'priority':
-                            return b.priority - a.priority; // Yüksek önce
                         case 'name':
                             return a.name.localeCompare(b.name);
-                        default: // smart
-                            return compareByDeadline(a, b); // Varsayılan: deadline
+                        default:
+                            return compareByDeadline(a, b);
+                    }
+                } else {
+                    switch (sortType) {
+                        case 'status':
+                            if (a.status === 1 && b.status !== 1) return -1;
+                            if (a.status !== 1 && b.status === 1) return 1;
+                            if (a.status === 5 && b.status === 6) return -1;
+                            if (a.status === 6 && b.status === 5) return 1;
+                            return 0;
+                        case 'date':
+                            return new Date(b.deadline || '1900-01-01') - new Date(a.deadline || '1900-01-01');
+                        case 'name':
+                            return a.name.localeCompare(b.name);
+                        default:
+                            return smartSort(a, b);
                     }
                 }
-
-                // 3. İkisi de bitmiş ise normal sırala
-                return 0;
             });
 
-            // DOM'u yeniden düzenle
-            var $container = $('#workItemsList');
+            var container = document.getElementById('workItemsList');
             items.forEach(function(item) {
-                $container.append(item.element);
+                container.appendChild(item.element);
             });
+        }
+
+        function smartSort(a, b) {
+            if (a.status === 1 && b.status !== 1) return -1;
+            if (a.status !== 1 && b.status === 1) return 1;
+            if (a.status === 5 && b.status === 6) return -1;
+            if (a.status === 6 && b.status === 5) return 1;
+            return 0;
         }
 
         function compareByDeadline(a, b) {
-            // Deadline olmayanlar sona
             if (!a.deadline && !b.deadline) return 0;
             if (!a.deadline) return 1;
             if (!b.deadline) return -1;
-
-            // Gecikmiş olanlar en önce
-            var dateA = new Date(a.deadline);
-            var dateB = new Date(b.deadline);
-            var today = new Date();
-
-            var aOverdue = dateA < today;
-            var bOverdue = dateB < today;
-
-            if (aOverdue && !bOverdue) return -1;
-            if (!aOverdue && bOverdue) return 1;
-
-            // Tarihe göre sırala
-            return dateA - dateB;
+            return new Date(a.deadline) - new Date(b.deadline);
         }
 
         function compareBySize(a, b) {
-            var sizeOrder = ['FastTrack', 'XS', 'S', 'M', 'L', 'XL'];
-            var aSize = getSizeFromHours(a.totalHours);
-            var bSize = getSizeFromHours(b.totalHours);
-            return sizeOrder.indexOf(aSize) - sizeOrder.indexOf(bSize);
+            return b.totalHours - a.totalHours;
         }
 
-        function getSizeFromHours(hours) {
-            var manDays = hours / 8;
-            if (manDays <= 5) return 'FastTrack';
-            if (manDays <= 10) return 'XS';
-            if (manDays <= 25) return 'S';
-            if (manDays <= 50) return 'M';
-            if (manDays <= 100) return 'L';
-            return 'XL';
+        function filterAndSort() {
+            var searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            var statusFilter = document.getElementById('statusFilter').value;
+
+            var workItems = document.querySelectorAll('#workItemsList .work-item');
+            workItems.forEach(function(item) {
+                var name = item.getAttribute('data-name').toLowerCase();
+                var description = (item.getAttribute('data-description') || '').toLowerCase();
+                var projectId = (item.getAttribute('data-project-id') || '').toLowerCase();
+                var status = item.getAttribute('data-status').toString();
+
+                var matchesSearch = !searchTerm ||
+                    name.includes(searchTerm) ||
+                    description.includes(searchTerm) ||
+                    projectId.includes(searchTerm);
+
+                var matchesStatus = !statusFilter || status === statusFilter;
+
+                if (matchesSearch && matchesStatus) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            applySorting();
         }
 
         function editRequest(id) {
@@ -340,47 +397,10 @@
         }
 
         function hideNotification(id) {
-            document.getElementById(id).classList.remove('show');
-        }
-
-        function filterItems() {
-            var searchTerm = $('#searchInput').val().toLowerCase();
-            var statusFilter = $('#statusFilter').val();
-            var sizeFilter = $('#sizeFilter').val();
-
-            $('#workItemsList .work-item').each(function() {
-                var $item = $(this);
-                var name = $item.data('name').toLowerCase();
-                var description = ($item.data('description') || '').toLowerCase();
-                var assignee = ($item.data('assignee') || '').toLowerCase();
-                var status = $item.find('.status-badge').text().trim();
-                var size = $item.find('.difficulty-badge').text().trim();
-
-                var matchesSearch = !searchTerm ||
-                    name.includes(searchTerm) ||
-                    description.includes(searchTerm) ||
-                    assignee.includes(searchTerm);
-
-                var matchesStatus = !statusFilter || status.includes(getStatusText(statusFilter));
-                var matchesSize = !sizeFilter || size === sizeFilter;
-
-                if (matchesSearch && matchesStatus && matchesSize) {
-                    $item.show();
-                } else {
-                    $item.hide();
-                }
-            });
-        }
-
-        function getStatusText(status) {
-            const statusMap = {
-                'New': 'Yeni',
-                'InProgress': 'Devam Eden',
-                'Testing': 'Test',
-                'Completed': 'Tamamlandı',
-                'Cancelled': 'İptal'
-            };
-            return statusMap[status] || status;
+            var element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('show');
+            }
         }
     </script>
 }

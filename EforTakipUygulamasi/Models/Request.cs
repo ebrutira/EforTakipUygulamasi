@@ -7,6 +7,10 @@ namespace EforTakipUygulamasi.Models
     {
         public int Id { get; set; }
 
+        // YENİ: Manuel ID alanı
+        [StringLength(6, ErrorMessage = "Proje ID'si en fazla 6 karakter olabilir")]
+        public string? ProjectId { get; set; }
+
         [Required(ErrorMessage = "Talep Adı zorunludur")]
         [StringLength(200, ErrorMessage = "Talep Adı en fazla 200 karakter olabilir")]
         public string Name { get; set; } = string.Empty;
@@ -23,14 +27,14 @@ namespace EforTakipUygulamasi.Models
         public DateTime? Deadline { get; set; }
         public DateTime? KKTDeadline { get; set; }
 
-        public decimal AnalystHours { get; set; } = 0;        
-        public decimal DeveloperHours { get; set; } = 0;     
-        public decimal KKTHours { get; set; } = 0;         
+        public decimal AnalystHours { get; set; } = 0;
+        public decimal DeveloperHours { get; set; } = 0;
+        public decimal KKTHours { get; set; } = 0;
 
         public decimal PreprodHours
         {
-            get => 0; 
-            set { } 
+            get => 0;
+            set { }
         }
 
         public decimal TotalHours => AnalystHours + DeveloperHours + KKTHours;
@@ -53,12 +57,23 @@ namespace EforTakipUygulamasi.Models
             }
         }
 
-
         public string Assignee { get; set; } = string.Empty;
         public string CreatedBy { get; set; } = string.Empty;
         public DateTime LastModified { get; set; } = DateTime.Now;
         public string LastModifiedBy { get; set; } = string.Empty;
 
         public bool IsOverdue => Deadline.HasValue && Deadline.Value < DateTime.Now;
+
+        // YENİ: Aktif talep mi kontrolü
+        public bool IsActive => Status == RequestStatusEnum.InProgress || Status == RequestStatusEnum.Testing;
+
+        // YENİ: Bekleme durumunda mı
+        public bool IsPending => Status == RequestStatusEnum.New;
+
+        // YENİ: Bitmiş mi
+        public bool IsCompleted => Status == RequestStatusEnum.Completed || Status == RequestStatusEnum.Cancelled;
+
+        // YENİ: Dosya listesi (UI için placeholder)
+        public List<string> AttachedFiles { get; set; } = new List<string>();
     }
 }

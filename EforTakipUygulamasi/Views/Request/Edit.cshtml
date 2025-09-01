@@ -4,8 +4,8 @@
 }
 
 <div class="container">
-    <div class="modal-content" style="position: static; margin: 2rem auto; max-width: 800px;">
-        <h2>İş Düzenle - #@Model.Id</h2>
+    <div class="modal-content" style="position: static; margin: 0; max-width: none; box-shadow: none;">
+        <h2>İş Düzenle - #@(Model.ProjectId ?? Model.Id.ToString())</h2>
 
         <form asp-action="Edit" id="workForm">
             <input asp-for="Id" type="hidden" />
@@ -14,10 +14,18 @@
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="form-group">
-                <label asp-for="Name" class="form-label">İş Başlığı</label>
-                <input asp-for="Name" class="form-input" required />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <!-- Proje ID ve İş Başlığı -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="ProjectId" class="form-label">Proje ID</label>
+                    <input asp-for="ProjectId" class="form-input project-id-field" maxlength="6" />
+                    <span asp-validation-for="ProjectId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Name" class="form-label">İş Başlığı</label>
+                    <input asp-for="Name" class="form-input" required />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
             </div>
 
             <div class="form-group">
@@ -30,22 +38,21 @@
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Durum</label>
                     <select asp-for="Status" class="form-input">
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.New">Yeni</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.InProgress">Devam Eden</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Testing">Test</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.OnHold">Beklemede</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Completed">Tamamlandı</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled">İptal</option>
+                        <option value="1">Bekleyen</option>
+                        <option value="2">Devam Eden</option>
+                        <option value="3">Test</option>
+                        <option value="5">Tamamlandı</option>
+                        <option value="6">İptal</option>
                     </select>
                     <span asp-validation-for="Status" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Priority" class="form-label">Öncelik</label>
                     <select asp-for="Priority" class="form-input">
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Low">Düşük</option>
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Medium">Orta</option>
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.High">Yüksek</option>
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Critical">Kritik</option>
+                        <option value="1">Düşük</option>
+                        <option value="2">Orta</option>
+                        <option value="3">Yüksek</option>
+                        <option value="4">Kritik</option>
                     </select>
                     <span asp-validation-for="Priority" class="text-danger"></span>
                 </div>
@@ -59,17 +66,17 @@
             <div class="form-row">
                 <div class="form-group">
                     <label asp-for="AnalystHours" class="form-label">Analist Saati</label>
-                    <input asp-for="AnalystHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
+                    <input asp-for="AnalystHours" type="number" step="0.5" min="0" class="form-input" />
                     <span asp-validation-for="AnalystHours" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="DeveloperHours" class="form-label">Yazılımcı Saati</label>
-                    <input asp-for="DeveloperHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
+                    <input asp-for="DeveloperHours" type="number" step="0.5" min="0" class="form-input" />
                     <span asp-validation-for="DeveloperHours" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="KKTHours" class="form-label">KKT/Preprod Saati</label>
-                    <input asp-for="KKTHours" type="number" step="0.5" min="0" class="form-input" onchange="calculateTotalHours()" />
+                    <input asp-for="KKTHours" type="number" step="0.5" min="0" class="form-input" />
                     <span asp-validation-for="KKTHours" class="text-danger"></span>
                 </div>
             </div>
@@ -93,7 +100,7 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Toplam İş Günü</label>
+                    <label class="form-label">Adam-Gün</label>
                     <div class="form-input" style="background: #f7fafc;" id="manDaysDisplay">@Model.TotalManDays.ToString("F1")</div>
                 </div>
                 <div class="form-group">
@@ -101,7 +108,41 @@
                     <div class="form-input" style="background: #f7fafc;" id="sizeDisplay">@Model.Size</div>
                 </div>
                 <div class="form-group">
+                    <!-- Boş -->
                 </div>
+            </div>
+
+            <!-- Dosya Yönetimi -->
+            <div class="form-group">
+                <label class="form-label">Dosyalar</label>
+
+                <!-- Mevcut Dosyalar -->
+                <div id="existingFiles" style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 1rem; color: #666; margin-bottom: 0.5rem;">Mevcut Dosyalar:</h4>
+                    <div class="file-item">
+                        <div>
+                            <span class="file-name">proje_detaylari.docx</span>
+                            <span class="file-size">(245 KB)</span>
+                        </div>
+                        <button type="button" class="remove-file-btn" onclick="deleteExistingFile('proje_detaylari.docx')">×</button>
+                    </div>
+                    <div class="file-item">
+                        <div>
+                            <span class="file-name">teknik_sartname.pdf</span>
+                            <span class="file-size">(1.2 MB)</span>
+                        </div>
+                        <button type="button" class="remove-file-btn" onclick="deleteExistingFile('teknik_sartname.pdf')">×</button>
+                    </div>
+                </div>
+
+                <!-- Yeni Dosya Yükleme -->
+                <div class="file-upload-area" id="fileUploadArea">
+                    <i class="fas fa-upload fa-2x" style="color: #667eea; margin-bottom: 1rem;"></i>
+                    <p>Yeni dosyalar eklemek için buraya sürükleyin veya <strong>tıklayın</strong></p>
+                    <p style="font-size: 0.8rem; color: #666;">Desteklenen formatlar: .doc, .docx, .pdf, .xls, .xlsx, .png, .jpg</p>
+                    <input type="file" id="fileInput" multiple accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg" style="display: none;">
+                </div>
+                <div class="file-list" id="newFileList"></div>
             </div>
 
             <!-- Meta Bilgiler -->
@@ -122,7 +163,7 @@
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
                 <a href="@Url.Action("Index")" class="btn btn-secondary">İptal</a>
-                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn" style="background: #e53e3e; color: white;">Sil</a>
+                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn" style="background: #ef4444; color: white;">Sil</a>
                 <button type="submit" class="btn btn-primary">Güncelle</button>
             </div>
         </form>
@@ -131,22 +172,38 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             calculateTotalHours();
+            setupFileUpload();
+
+            // Proje ID otomatik büyük harf
+            var projectIdField = document.getElementById('ProjectId');
+            if (projectIdField) {
+                projectIdField.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            }
+
+            // Hour input event listeners
+            var hourInputs = document.querySelectorAll('[name="AnalystHours"], [name="DeveloperHours"], [name="KKTHours"]');
+            hourInputs.forEach(function(input) {
+                input.addEventListener('change', calculateTotalHours);
+                input.addEventListener('input', calculateTotalHours);
+            });
         });
 
         function calculateTotalHours() {
-            const analyst = parseFloat($('[name="AnalystHours"]').val()) || 0;
-            const developer = parseFloat($('[name="DeveloperHours"]').val()) || 0;
-            const kkt = parseFloat($('[name="KKTHours"]').val()) || 0;
-            const total = analyst + developer + kkt;
-            const manDays = total / 8;
+            var analyst = parseFloat(document.querySelector('[name="AnalystHours"]').value) || 0;
+            var developer = parseFloat(document.querySelector('[name="DeveloperHours"]').value) || 0;
+            var kkt = parseFloat(document.querySelector('[name="KKTHours"]').value) || 0;
+            var total = analyst + developer + kkt;
+            var manDays = total / 8;
 
-            $('#totalHoursDisplay').text(total.toFixed(1));
-            $('#manDaysDisplay').text(manDays.toFixed(1));
+            document.getElementById('totalHoursDisplay').textContent = total.toFixed(1);
+            document.getElementById('manDaysDisplay').textContent = manDays.toFixed(1);
 
             // T-Shirt Size hesaplama
-            let size = 'FastTrack';
+            var size = 'FastTrack';
             if (manDays <= 5) size = 'FastTrack';
             else if (manDays <= 10) size = 'XS';
             else if (manDays <= 25) size = 'S';
@@ -154,7 +211,166 @@
             else if (manDays <= 100) size = 'L';
             else size = 'XL';
 
-            $('#sizeDisplay').text(size);
+            document.getElementById('sizeDisplay').textContent = size;
+        }
+
+        function deleteExistingFile(fileName) {
+            if (confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) {
+                fetch('@Url.Action("DeleteFile")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'requestId=@Model.Id&fileName=' + encodeURIComponent(fileName)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var fileItems = document.querySelectorAll('#existingFiles .file-item');
+                        fileItems.forEach(function(item) {
+                            if (item.querySelector('.file-name').textContent === fileName) {
+                                item.remove();
+                            }
+                        });
+                        showNotification('Dosya başarıyla silindi.', 'success');
+                    } else {
+                        showNotification('Dosya silinemedi: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('Dosya silinirken hata oluştu.', 'error');
+                });
+            }
+        }
+
+        function setupFileUpload() {
+            var uploadArea = document.getElementById('fileUploadArea');
+            var fileInput = document.getElementById('fileInput');
+            var fileList = document.getElementById('newFileList');
+
+            if (!uploadArea || !fileInput || !fileList) return;
+
+            // Click to select
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            // File selection
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            function handleFiles(files) {
+                Array.from(files).forEach(function(file) {
+                    if (validateFile(file)) {
+                        uploadFileImmediately(file);
+                    }
+                });
+            }
+
+            function validateFile(file) {
+                var allowedTypes = ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'];
+                var fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (allowedTypes.indexOf(fileExtension) === -1) {
+                    alert('Desteklenmeyen dosya formatı: ' + fileExtension);
+                    return false;
+                }
+
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    alert('Dosya boyutu 10MB\'dan büyük olamaz.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function uploadFileImmediately(file) {
+                var formData = new FormData();
+                formData.append('file', file);
+                formData.append('requestId', '@Model.Id');
+
+                // Show progress
+                var progressItem = document.createElement('div');
+                progressItem.className = 'file-item';
+                progressItem.id = 'upload-' + file.name;
+                progressItem.innerHTML =
+                    '<div>' +
+                        '<span class="file-name">' + file.name + '</span>' +
+                        '<span class="file-size">Yükleniyor...</span>' +
+                    '</div>' +
+                    '<div class="upload-spinner"></div>';
+
+                fileList.appendChild(progressItem);
+
+                fetch('@Url.Action("UploadFile")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    progressItem.remove();
+                    if (data.success) {
+                        // Add to existing files section
+                        var existingFiles = document.getElementById('existingFiles');
+                        var newFileItem = document.createElement('div');
+                        newFileItem.className = 'file-item';
+                        newFileItem.innerHTML =
+                            '<div>' +
+                                '<span class="file-name">' + data.fileName + '</span>' +
+                                '<span class="file-size">(Yeni)</span>' +
+                            '</div>' +
+                            '<button type="button" class="remove-file-btn" onclick="deleteExistingFile(\'' + data.fileName + '\')">×</button>';
+
+                        existingFiles.appendChild(newFileItem);
+                        showNotification('Dosya başarıyla yüklendi.', 'success');
+                    } else {
+                        showNotification('Dosya yüklenemedi: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    progressItem.remove();
+                    showNotification('Dosya yüklenirken hata oluştu.', 'error');
+                });
+            }
+        }
+
+        function showNotification(message, type) {
+            var notification = document.createElement('div');
+            notification.className = 'notification show';
+            notification.style.background = type === 'success' ?
+                'linear-gradient(135deg, #10b981, #059669)' :
+                'linear-gradient(135deg, #ef4444, #dc2626)';
+            notification.innerHTML = '<button class="close-btn" onclick="this.parentElement.remove()">&times;</button><span>' + message + '</span>';
+
+            document.body.appendChild(notification);
+
+            setTimeout(function() {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
         }
     </script>
 }

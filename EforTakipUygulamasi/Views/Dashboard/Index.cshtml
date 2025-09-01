@@ -240,8 +240,8 @@
 
             <div class="stat-card red">
                 <div>
-                    <div class="stat-value" id="overdueRequests">-</div>
-                    <div class="stat-label">Geciken</div>
+                    <div class="stat-value" id="approachingRequests">-</div>
+                    <div class="stat-label">Teslimi Yaklaşan</div>
                 </div>
                 <div class="stat-icon">⚠️</div>
             </div>
@@ -318,8 +318,9 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
+
     <script>
-        $(document).ready(function () {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('Dashboard yükleniyor...');
 
             // Son güncelleme zamanını göster
@@ -330,62 +331,37 @@
 
         function loadDashboardData() {
             console.log('API çağrısı yapılıyor...');
-            console.log('Mevcut URL:', window.location.href);
 
-            $.ajax({
-                url: '/Request/GetAllJson',
-                type: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    console.log('✅ API başarılı:', data);
-                    if (data && Array.isArray(data) && data.length > 0) {
-                        updateStats(data);
-                        createCharts(data);
-                    } else if (data && data.error) {
-                        console.error('❌ API Hatası:', data.error);
-                        showErrorState();
-                    } else {
-                        console.log('⚠️ Boş veri');
-                        showEmptyState();
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('❌ AJAX Hatası:');
-                    console.error('Status:', status);
-                    console.error('Error:', error);
-                    console.error('Response:', xhr.responseText);
-                    console.error('Status Code:', xhr.status);
-
-                    if (xhr.status === 404) {
-                        console.log('🔄 Alternatif yol deneniyor...');
-                        tryAlternativeRoute();
-                    } else {
-                        showErrorState();
-                    }
+            fetch('/Request/GetAllJson', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 }
-            });
-        }
-
-        function tryAlternativeRoute() {
-            $.ajax({
-                url: './Request/GetAllJson',
-                type: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    console.log('✅ Alternatif route başarılı:', data);
-                    if (data && Array.isArray(data) && data.length > 0) {
-                        updateStats(data);
-                        createCharts(data);
-                    } else {
-                        showEmptyState();
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('❌ Alternatif route de başarısız');
-                    console.error('Muhtemelen Controller problemi var');
-                    console.log('🧪 Test verisi ile çalışıyor...');
-                    useTestData();
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ API başarılı:', data);
+                if (data && Array.isArray(data) && data.length > 0) {
+                    updateStats(data);
+                    createCharts(data);
+                } else if (data && data.error) {
+                    console.error('❌ API Hatası:', data.error);
+                    showErrorState();
+                } else {
+                    console.log('⚠️ Boş veri');
+                    showEmptyState();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Fetch Hatası:', error);
+                console.log('🧪 Test verisi ile çalışıyor...');
+                useTestData();
             });
         }
 
@@ -429,18 +405,20 @@
         function updateStats(requests) {
             const totalRequests = requests.length;
             const inProgressRequests = requests.filter(r => getProp(r, 'status') === 2).length;
-            const completedRequests = requests.filter(r => getProp(r, 'status') === 5).length;
             const totalHours = requests.reduce((sum, r) => sum + (getProp(r, 'totalHours') || 0), 0);
-            const overdueRequests = requests.filter(r => {
+
+            // Yaklaşan deadline hesabı (2 hafta içinde)
+            const approachingRequests = requests.filter(r => {
                 const deadline = getProp(r, 'deadline');
                 if (!deadline) return false;
-                return new Date(deadline) < new Date() && getProp(r, 'status') !== 5;
+                const diffDays = (new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24);
+                return diffDays > 0 && diffDays <= 14 && (getProp(r, 'status') === 2 || getProp(r, 'status') === 3);
             }).length;
 
             document.getElementById('totalRequests').textContent = totalRequests;
             document.getElementById('inProgressRequests').textContent = inProgressRequests;
             document.getElementById('totalHours').textContent = Math.round(totalHours);
-            document.getElementById('overdueRequests').textContent = overdueRequests;
+            document.getElementById('approachingRequests').textContent = approachingRequests;
 
             const activeRequests = requests.filter(r => getProp(r, 'status') !== 5 && getProp(r, 'status') !== 6);
             const activeTotalHours = activeRequests.reduce((sum, r) => sum + (getProp(r, 'totalHours') || 0), 0);
@@ -451,7 +429,7 @@
             document.getElementById('inProgressRate').textContent = totalRequests > 0 ?
                 (inProgressRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
             document.getElementById('overdueRate').textContent = totalRequests > 0 ?
-                (overdueRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
+                (approachingRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
 
             // Zaman analizi
             const now = new Date();
@@ -485,14 +463,14 @@
             };
 
             const ctx = document.getElementById('statusChart');
-            if (ctx) {
+            if (ctx && typeof Chart !== 'undefined') {
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Yeni', 'Devam Eden', 'Test', 'Tamamlandı'],
+                        labels: ['Bekleyen', 'Devam Eden', 'Test', 'Tamamlandı'],
                         datasets: [{
                             data: [statusCounts.new, statusCounts.inProgress, statusCounts.testing, statusCounts.completed],
-                            backgroundColor: ['#667eea', '#ffc107', '#fd7e14', '#28a745'],
+                            backgroundColor: ['#fbbf24', '#3b82f6', '#f97316', '#10b981'],
                             borderWidth: 2,
                             borderColor: '#fff'
                         }]
@@ -536,7 +514,7 @@
             });
 
             const ctx = document.getElementById('sizeChart');
-            if (ctx) {
+            if (ctx && typeof Chart !== 'undefined') {
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -544,7 +522,7 @@
                         datasets: [{
                             label: 'İş Sayısı',
                             data: Object.values(sizeCounts),
-                            backgroundColor: ['#28a745', '#28a745', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1'],
+                            backgroundColor: ['#10b981', '#10b981', '#fbbf24', '#f97316', '#ef4444', '#8b5cf6'],
                             borderRadius: 4
                         }]
                     },
@@ -579,7 +557,7 @@
             });
 
             const ctx = document.getElementById('effortChart');
-            if (ctx) {
+            if (ctx && typeof Chart !== 'undefined') {
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -587,7 +565,7 @@
                         datasets: [{
                             label: 'Toplam Saat',
                             data: [analystTotal, devTotal, kktTotal + preprodTotal],
-                            backgroundColor: ['#667eea', '#28a745', '#ffc107'],
+                            backgroundColor: ['#667eea', '#10b981', '#fbbf24'],
                             borderRadius: 6
                         }]
                     },
@@ -615,7 +593,7 @@
             document.getElementById('totalRequests').textContent = '0';
             document.getElementById('inProgressRequests').textContent = '0';
             document.getElementById('totalHours').textContent = '0';
-            document.getElementById('overdueRequests').textContent = '0';
+            document.getElementById('approachingRequests').textContent = '0';
             document.getElementById('totalManDays').textContent = '0';
             document.getElementById('averageHours').textContent = '0h';
         }
@@ -624,7 +602,7 @@
             document.getElementById('totalRequests').textContent = 'Hata';
             document.getElementById('inProgressRequests').textContent = 'Hata';
             document.getElementById('totalHours').textContent = 'Hata';
-            document.getElementById('overdueRequests').textContent = 'Hata';
+            document.getElementById('approachingRequests').textContent = 'Hata';
             document.getElementById('totalManDays').textContent = 'Hata';
             document.getElementById('averageHours').textContent = 'Hata';
         }

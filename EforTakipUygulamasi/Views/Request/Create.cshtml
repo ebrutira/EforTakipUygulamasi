@@ -10,10 +10,24 @@
         <form asp-action="Create" id="workForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="form-group">
-                <label asp-for="Name" class="form-label">İş Başlığı</label>
-                <input asp-for="Name" class="form-input" required />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <!-- YENİ: Proje ID Alanı -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="ProjectId" class="form-label">Proje ID (6 Hane)</label>
+                    <input asp-for="ProjectId" class="form-input project-id-field"
+                           placeholder="@ViewBag.SuggestedProjectId"
+                           maxlength="6"
+                           title="Boş bırakırsanız otomatik atanır" />
+                    <span asp-validation-for="ProjectId" class="text-danger"></span>
+                    <small style="color: #666; font-size: 0.8rem;">
+                        Boş bırakırsanız otomatik: <strong>@ViewBag.SuggestedProjectId</strong> atanır
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Name" class="form-label">İş Başlığı</label>
+                    <input asp-for="Name" class="form-input" required />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
             </div>
 
             <div class="form-group">
@@ -26,10 +40,9 @@
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Durum</label>
                     <select asp-for="Status" class="form-input">
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.New">Yeni</option>
+                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.New">Bekleyen</option>
                         <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.InProgress">Devam Eden</option>
                         <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Testing">Test</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.OnHold">Beklemede</option>
                         <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Completed">Tamamlandı</option>
                         <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled">İptal</option>
                     </select>
@@ -87,19 +100,27 @@
                 </div>
             </div>
 
-
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Toplam İş Günü</label>
+                    <label class="form-label">Adam-Gün</label>
                     <div class="form-input" style="background: #f7fafc;" id="manDaysDisplay">0.0</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">T-Shirt Size</label>
                     <div class="form-input" style="background: #f7fafc;" id="sizeDisplay">FastTrack</div>
                 </div>
-                <div class="form-group">
+            </div>
 
+            <!-- YENİ: Dosya Yükleme Alanı -->
+            <div class="form-group">
+                <label class="form-label">Dosyalar (Word, PDF, Excel, Resim)</label>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <i class="fas fa-upload fa-2x" style="color: #667eea; margin-bottom: 1rem;"></i>
+                    <p>Dosyaları buraya sürükleyin veya <strong>tıklayın</strong></p>
+                    <p style="font-size: 0.8rem; color: #666;">Desteklenen formatlar: .doc, .docx, .pdf, .xls, .xlsx, .png, .jpg</p>
+                    <input type="file" id="fileInput" multiple accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg" style="display: none;">
                 </div>
+                <div class="file-list" id="fileList"></div>
             </div>
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
@@ -114,13 +135,18 @@
     <script>
         $(document).ready(function() {
             calculateTotalHours();
+            setupFileUpload();
+
+            // Proje ID otomatik büyük harf
+            $('#ProjectId').on('input', function() {
+                this.value = this.value.toUpperCase();
+            });
         });
 
         function calculateTotalHours() {
             const analyst = parseFloat($('[name="AnalystHours"]').val()) || 0;
             const developer = parseFloat($('[name="DeveloperHours"]').val()) || 0;
             const kkt = parseFloat($('[name="KKTHours"]').val()) || 0;
-
 
             const total = analyst + developer + kkt;
             const manDays = total / 8;
@@ -138,6 +164,93 @@
             else size = 'XL';
 
             $('#sizeDisplay').text(size);
+        }
+
+        function setupFileUpload() {
+            const uploadArea = $('#fileUploadArea');
+            const fileInput = $('#fileInput');
+            const fileList = $('#fileList');
+            let selectedFiles = [];
+
+            // Click to select
+            uploadArea.on('click', function() {
+                fileInput.click();
+            });
+
+            // File selection
+            fileInput.on('change', function() {
+                handleFiles(this.files);
+            });
+
+            // Drag and drop
+            uploadArea.on('dragover dragenter', function(e) {
+                e.preventDefault();
+                uploadArea.addClass('dragover');
+            });
+
+            uploadArea.on('dragleave', function() {
+                uploadArea.removeClass('dragover');
+            });
+
+            uploadArea.on('drop', function(e) {
+                e.preventDefault();
+                uploadArea.removeClass('dragover');
+                handleFiles(e.originalEvent.dataTransfer.files);
+            });
+
+            function handleFiles(files) {
+                Array.from(files).forEach(file => {
+                    if (validateFile(file)) {
+                        selectedFiles.push(file);
+                        addFileToList(file);
+                    }
+                });
+            }
+
+            function validateFile(file) {
+                const allowedTypes = ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (!allowedTypes.includes(fileExtension)) {
+                    alert('Desteklenmeyen dosya formatı: ' + fileExtension);
+                    return false;
+                }
+
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    alert('Dosya boyutu 10MB\'dan büyük olamaz.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function addFileToList(file) {
+                const fileItem = $(`
+                    <div class="file-item">
+                        <div>
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">(${formatFileSize(file.size)})</span>
+                        </div>
+                        <button type="button" class="remove-file-btn" onclick="removeFile('${file.name}')">×</button>
+                    </div>
+                `);
+                fileList.append(fileItem);
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            window.removeFile = function(fileName) {
+                selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+                fileList.find('.file-item').filter(function() {
+                    return $(this).find('.file-name').text() === fileName;
+                }).remove();
+            };
         }
     </script>
 }

@@ -1,0 +1,276 @@
+﻿@model List<EforTakipUygulamasi.Models.User>
+
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+    var currentUserRole = ViewContext.HttpContext.Session.GetInt32("UserRole") ?? 3;
+    var currentUserId = ViewContext.HttpContext.Session.GetInt32("UserId") ?? 0;
+}
+
+<div class="container">
+    <div class="controls">
+        <h1>Kullanıcı Yönetimi</h1>
+        @if (currentUserRole == 1) // Sadece Admin
+        {
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                ➕ Yeni Kullanıcı
+            </a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="notification show" id="notification">
+            @TempData["SuccessMessage"]
+            <button class="close-btn" onclick="closeNotification()">&times;</button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="notification show" id="notification" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            @TempData["ErrorMessage"]
+            <button class="close-btn" onclick="closeNotification()">&times;</button>
+        </div>
+    }
+
+    <div class="work-items">
+        <div class="table-header">
+            <div>Kullanıcı Bilgileri</div>
+            <div>Rol</div>
+            <div>Durum</div>
+            <div>Son Giriş</div>
+            <div>Oluşturma</div>
+            <div style="min-width: 200px;">İşlemler</div>
+        </div>
+
+        @foreach (var user in Model)
+        {
+            <div class="work-item">
+                <div>
+                    <div class="work-title">@user.FullName</div>
+                    <div style="font-size: 0.8rem; color: #64748b;">
+                        👤 @user.Username | 📧 @user.Email
+                    </div>
+                </div>
+                <div>
+                    <span class="status-badge @GetRoleCssClass(user.Role)">
+                        @user.RoleDisplayName
+                    </span>
+                </div>
+                <div>
+                    <span class="status-badge @(user.IsActive ? "status-completed" : "status-cancelled")">
+                        @(user.IsActive ? "Aktif" : "Pasif")
+                    </span>
+                </div>
+                <div>
+                    @(user.LastLogin?.ToString("dd.MM.yyyy HH:mm") ?? "Hiç giriş yapmamış")
+                </div>
+                <div>
+                    @user.CreatedDate.ToString("dd.MM.yyyy")
+                </div>
+                <div style="display: flex; gap: 8px; min-width: 200px;">
+                    @if (currentUserRole == 1 || currentUserId == user.Id) // Admin veya kendisi
+                    {
+                        <a href="@Url.Action("Edit", new { id = user.Id })"
+                           class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                            ✏️ Düzenle
+                        </a>
+                    }
+
+                    @if (currentUserRole == 1 || currentUserId == user.Id) // Admin veya kendisi
+                    {
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;"
+                                onclick="changePassword(@user.Id, '@user.FullName')">
+                            🔑 Şifre
+                        </button>
+                    }
+
+                    @if (currentUserRole == 1) // Sadece Admin
+                    {
+                        <button class="btn @(user.IsActive ? "btn-secondary" : "btn-primary")"
+                                style="padding: 6px 12px; font-size: 0.8rem;"
+                                onclick="toggleStatus(@user.Id, '@user.FullName', @user.IsActive.ToString().ToLower())">
+                            @(user.IsActive ? "⏸️ Pasif" : "▶️ Aktif")
+                        </button>
+                    }
+
+                    @if (currentUserRole == 1 && user.Id != currentUserId) // Sadece Admin ve kendisi değilse
+                    {
+                        <button class="btn" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 0.8rem;"
+                                onclick="deleteUser(@user.Id, '@user.FullName')">
+                            🗑️ Sil
+                        </button>
+                    }
+
+                    @if (currentUserRole > 1) // Developer/Viewer için
+                    {
+                        <span style="color: #64748b; font-size: 0.8rem; padding: 6px;">
+                            @(currentUserId == user.Id ? "Kendi Profiliniz" : "Yetkiniz Yok")
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Şifre Değiştirme Modal -->
+<div class="modal" id="passwordModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 style="margin-bottom: 1rem;">Şifre Değiştir</h2>
+        <p id="passwordUserName" style="color: #64748b; margin-bottom: 1.5rem;"></p>
+
+        <input type="hidden" id="userId">
+
+        <div class="form-group">
+            <label class="form-label">Yeni Şifre</label>
+            <input type="password" class="form-input" id="newPassword" placeholder="En az 6 karakter">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Şifre Tekrar</label>
+            <input type="password" class="form-input" id="confirmPassword" placeholder="Şifreyi tekrar girin">
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: end;">
+            <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">İptal</button>
+            <button type="button" class="btn btn-primary" onclick="savePassword()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function changePassword(userId, fullName) {
+        document.getElementById('userId').value = userId;
+        document.getElementById('passwordUserName').textContent = fullName + ' için yeni şifre belirleyin';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        document.getElementById('passwordModal').classList.add('show');
+    }
+
+    function closePasswordModal() {
+        document.getElementById('passwordModal').classList.remove('show');
+    }
+
+    function savePassword() {
+        const userId = document.getElementById('userId').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!newPassword) {
+            showMessage('Yeni şifre boş olamaz', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showMessage('Şifreler uyuşmuyor', 'error');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            showMessage('Şifre en az 6 karakter olmalı', 'error');
+            return;
+        }
+
+        fetch('/User/ChangePassword', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${userId}&newPassword=${newPassword}&confirmPassword=${confirmPassword}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closePasswordModal();
+                showMessage(data.message, 'success');
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Bir hata oluştu', 'error');
+        });
+    }
+
+    function toggleStatus(userId, fullName, isActive) {
+        const action = isActive ? 'pasifleştirmek' : 'aktifleştirmek';
+
+        if (confirm(`${fullName} kullanıcısını ${action} istediğinizden emin misiniz?`)) {
+            fetch('/User/ToggleStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `id=${userId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            });
+        }
+    }
+
+    function deleteUser(userId, fullName) {
+        if (confirm(`"${fullName}" kullanıcısını kalıcı olarak silmek istediğinizden emin misiniz?`)) {
+            fetch('/User/Delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `id=${userId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            });
+        }
+    }
+
+    function showMessage(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification show`;
+        notification.style.background = type === 'success'
+            ? 'linear-gradient(135deg, #10b981, #059669)'
+            : 'linear-gradient(135deg, #ef4444, #dc2626)';
+        notification.innerHTML = `
+            ${message}
+            <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+
+    function closeNotification() {
+        const notification = document.getElementById('notification');
+        if (notification) {
+            notification.classList.remove('show');
+        }
+    }
+</script>
+
+@functions {
+    string GetRoleCssClass(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.Admin => "status-new", // Sarı
+            UserRole.Developer => "status-inprogress", // Mavi
+            UserRole.Viewer => "diff-1", // Yeşil
+            _ => "status-cancelled"
+        };
+    }
+}

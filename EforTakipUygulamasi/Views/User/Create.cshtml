@@ -1,0 +1,144 @@
+﻿@model EforTakipUygulamasi.Models.User
+
+@{
+    ViewData["Title"] = "Yeni Kullanıcı Oluştur";
+}
+
+<div class="container">
+    <h1>Yeni Kullanıcı Oluştur</h1>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+    {
+        <div class="notification show" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            @ViewBag.ErrorMessage
+            <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+    }
+
+    <div class="work-items">
+        <div style="padding: 2rem;">
+            <form method="post">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="FullName">Ad Soyad *</label>
+                        <input type="text"
+                               class="form-input"
+                               id="FullName"
+                               name="FullName"
+                               value="@Model.FullName"
+                               placeholder="Örn: Ahmet Yılmaz"
+                               required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="Username">Kullanıcı Adı *</label>
+                        <input type="text"
+                               class="form-input"
+                               id="Username"
+                               name="Username"
+                               value="@Model.Username"
+                               placeholder="Örn: ahmet.yilmaz"
+                               required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="Email">Email Adresi *</label>
+                        <input type="email"
+                               class="form-input"
+                               id="Email"
+                               name="Email"
+                               value="@Model.Email"
+                               placeholder="Örn: ahmet@company.com"
+                               required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="Role">Kullanıcı Rolü *</label>
+                        <select class="form-input" id="Role" name="Role" required>
+                            <option value="">Rol Seçin</option>
+                            <option value="1">👑 Yönetici (Admin)</option>
+                            <option value="2">💻 Geliştirici (Developer)</option>
+                            <option value="3">👁️ Görüntüleyici (Viewer)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="password">Şifre *</label>
+                        <input type="password"
+                               class="form-input"
+                               id="password"
+                               name="password"
+                               placeholder="En az 6 karakter"
+                               required />
+                        <small style="color: #64748b;">Minimum 6 karakter, en az 1 harf ve 1 rakam içermeli</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">Şifre Tekrar *</label>
+                        <input type="password"
+                               class="form-input"
+                               id="confirmPassword"
+                               name="confirmPassword"
+                               placeholder="Şifreyi tekrar girin"
+                               required />
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: end; margin-top: 2rem;">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">❌ İptal</a>
+                    <button type="submit" class="btn btn-primary" onclick="debugForm()">✅ Kullanıcı Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function debugForm() {
+        const roleValue = document.getElementById('Role').value;
+        console.log('Seçilen rol:', roleValue);
+    }
+
+    // Şifre eşleşme kontrolü
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+
+        if (password && confirmPassword && password !== confirmPassword) {
+            this.style.borderColor = '#ef4444';
+        } else {
+            this.style.borderColor = '#e2e8f0';
+        }
+    });
+
+    // Form submit kontrolü
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const role = document.getElementById('Role').value;
+
+        console.log('Form submit - Rol:', role);
+
+        if (!role) {
+            e.preventDefault();
+            alert('Lütfen bir rol seçin!');
+            return false;
+        }
+
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Şifreler uyuşmuyor!');
+            return false;
+        }
+
+        if (password.length < 6) {
+            e.preventDefault();
+            alert('Şifre en az 6 karakter olmalı!');
+            return false;
+        }
+    });
+</script>

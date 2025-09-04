@@ -31,7 +31,7 @@
         public static class UserRoles
         {
             public const string Admin = "Admin";
-            public const string Contributor = "Contributor";
+            public const string Developer = "Developer";
             public const string Viewer = "Viewer";
         }
 

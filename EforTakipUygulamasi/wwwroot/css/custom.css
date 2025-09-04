@@ -44,7 +44,7 @@ body {
 .tab-navigation {
     display: flex;
     gap: 4px;
-    margin-bottom: 2rem;
+    margin-bottom: 1px;
     background: white;
     padding: 6px;
     border-radius: 12px;
@@ -97,7 +97,8 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    margin-top: 0;
 }
 
 .stat-card {

@@ -5,6 +5,7 @@ using System.IO;
 
 namespace EforTakipUygulamasi.Controllers
 {
+    [RequireLogin] // Giriş yapmış kullanıcılar için
     public class RequestController : Controller
     {
         private readonly IRequestRepository _repository;
@@ -70,6 +71,13 @@ namespace EforTakipUygulamasi.Controllers
         [HttpPost]
         public JsonResult ChangeStatus(int id, int newStatus)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) // Viewer
+            {
+                return Json(new { success = false, message = "Bu işlem için yetkiniz yok" });
+            }
+
             try
             {
                 var request = _repository.GetById(id);
@@ -81,7 +89,7 @@ namespace EforTakipUygulamasi.Controllers
                 var oldStatus = request.Status;
                 request.Status = (RequestStatusEnum)newStatus;
                 request.LastModified = DateTime.Now;
-                request.LastModifiedBy = "Koray";
+                request.LastModifiedBy = HttpContext.Session.GetString("FullName") ?? "Kullanıcı";
 
                 _repository.Update(request);
 
@@ -104,6 +112,14 @@ namespace EforTakipUygulamasi.Controllers
 
         public IActionResult Create()
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) // Viewer
+            {
+                TempData["ErrorMessage"] = "Talep oluşturma yetkiniz yok";
+                return RedirectToAction(nameof(Index));
+            }
+
             var model = new Request();
 
             // Otomatik ID öner
@@ -116,6 +132,14 @@ namespace EforTakipUygulamasi.Controllers
         [HttpPost]
         public IActionResult Create(Request request)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) // Viewer
+            {
+                TempData["ErrorMessage"] = "Talep oluşturma yetkiniz yok";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 if (ModelState.IsValid)
@@ -127,10 +151,18 @@ namespace EforTakipUygulamasi.Controllers
                         request.ProjectId = EffortHelper.GenerateRequestId(allRequests);
                     }
 
-                    request.Status = RequestStatusEnum.New;
+                    // Tarih ve kullanıcı bilgilerini ayarla
                     request.CreatedDate = DateTime.Now;
                     request.LastModified = DateTime.Now;
-                    request.CreatedBy = "Koray";
+
+                    // Session'dan kullanıcı adını al
+                    var currentUserName = HttpContext.Session.GetString("FullName");
+                    request.CreatedBy = currentUserName ?? "Bilinmeyen Kullanıcı";
+                    request.LastModifiedBy = currentUserName ?? "Bilinmeyen Kullanıcı";
+
+                    // Debug için konsola yazdır
+                    Console.WriteLine($"Talep oluşturuluyor - CreatedBy: {request.CreatedBy}");
+                    Console.WriteLine($"Session FullName: {currentUserName}");
 
                     _repository.Create(request);
 
@@ -140,6 +172,7 @@ namespace EforTakipUygulamasi.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Create hatası: {ex.Message}");
                 TempData["ErrorMessage"] = $"Kayıt sırasında hata: {ex.Message}";
             }
 
@@ -153,6 +186,14 @@ namespace EforTakipUygulamasi.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) // Viewer
+            {
+                TempData["ErrorMessage"] = "Talep düzenleme yetkiniz yok";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 Console.WriteLine($"Edit method çağrıldı, ID: {id}");
@@ -179,12 +220,20 @@ namespace EforTakipUygulamasi.Controllers
         [HttpPost]
         public IActionResult Edit(Request request)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) 
+            {
+                TempData["ErrorMessage"] = "Talep düzenleme yetkiniz yok";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 if (ModelState.IsValid)
                 {
                     request.LastModified = DateTime.Now;
-                    request.LastModifiedBy = "Koray";
+                    request.LastModifiedBy = HttpContext.Session.GetString("FullName") ?? "Kullanıcı";
 
                     _repository.Update(request);
 
@@ -199,9 +248,40 @@ namespace EforTakipUygulamasi.Controllers
 
             return View(request);
         }
+        public IActionResult Details(int id)
+        {
+            try
+            {
+                var request = _repository.GetById(id);
+                if (request == null)
+                {
+                    TempData["ErrorMessage"] = "Talep bulunamadı.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+                ViewBag.CanEdit = userRole != 3;
+                ViewBag.IsAdmin = userRole == 1; 
+
+                return View(request);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Hata: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
 
         public IActionResult Delete(int id)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole != 1) // Sadece Admin
+            {
+                TempData["ErrorMessage"] = "Talep silme yetkiniz yok";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 var request = _repository.GetById(id);
@@ -223,6 +303,14 @@ namespace EforTakipUygulamasi.Controllers
         [HttpPost, ActionName("Delete")]
         public IActionResult DeleteConfirmed(int id)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole != 1) // Sadece Admin
+            {
+                TempData["ErrorMessage"] = "Talep silme yetkiniz yok";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 _repository.Delete(id);
@@ -259,6 +347,13 @@ namespace EforTakipUygulamasi.Controllers
         [HttpPost]
         public async Task<JsonResult> UploadFile(int requestId, IFormFile file)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) // Viewer
+            {
+                return Json(new { success = false, message = "Dosya yükleme yetkiniz yok" });
+            }
+
             try
             {
                 Console.WriteLine($"UploadFile çağrıldı: RequestId={requestId}, FileName={file?.FileName}");
@@ -326,6 +421,13 @@ namespace EforTakipUygulamasi.Controllers
         [HttpPost]
         public JsonResult DeleteFile(int requestId, string fileName)
         {
+            var userRole = HttpContext.Session.GetInt32("UserRole") ?? 3;
+
+            if (userRole == 3) // Viewer
+            {
+                return Json(new { success = false, message = "Dosya silme yetkiniz yok" });
+            }
+
             try
             {
                 Console.WriteLine($"DeleteFile çağrıldı: RequestId={requestId}, FileName={fileName}");
@@ -457,6 +559,7 @@ namespace EforTakipUygulamasi.Controllers
             }
         }
 
+
         // ====== HELPER METHODS ======
 
         private string ExtractOriginalName(string safeName)
@@ -490,7 +593,7 @@ namespace EforTakipUygulamasi.Controllers
                 ".xls" => "application/vnd.ms-excel",
                 ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ".png" => "image/png",
-                ".csv" => "text/csv", 
+                ".csv" => "text/csv",
                 ".jpg" or ".jpeg" => "image/jpeg",
                 _ => "application/octet-stream"
             };

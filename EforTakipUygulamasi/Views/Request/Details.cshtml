@@ -1,0 +1,286 @@
+﻿@model EforTakipUygulamasi.Models.Request
+
+@{
+    ViewData["Title"] = "Proje Detayları";
+}
+
+<div class="container">
+    <div class="controls">
+        <h1>Proje Detayları</h1>
+        <div style="display: flex; gap: 1rem;">
+            @if (ViewBag.CanEdit)
+            {
+                <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">
+                    ✏️ Düzenle
+                </a>
+            }
+            @if (ViewBag.IsAdmin)
+            {
+                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn" style="background: #ef4444; color: white;">
+                    🗑️ Sil
+                </a>
+            }
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                ← Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <div class="work-items">
+        <div style="padding: 2rem;">
+
+            <!-- Temel Bilgiler -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Proje ID</label>
+                    <div class="project-id-field" style="padding: 12px; background: #f8fafc;">
+                        @Model.ProjectId
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Talep Adı</label>
+                    <div class="work-title" style="padding: 12px; background: #f8fafc;">
+                        @Model.Name
+                    </div>
+                </div>
+            </div>
+
+            <!-- Açıklama -->
+            <div class="form-group">
+                <label class="form-label">Açıklama</label>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; min-height: 100px;">
+                    @(string.IsNullOrEmpty(Model.Description) ? "Açıklama yok" : Model.Description)
+                </div>
+            </div>
+
+            <!-- Durum ve Öncelik -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Durum</label>
+                    <div>
+                        <span class="status-badge @GetStatusCss(Model.Status)">
+                            @EffortHelper.StatusToString(Model.Status)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Öncelik</label>
+                    <div>
+                        <span class="status-badge @GetPriorityCss(Model.Priority)">
+                            @GetPriorityText(Model.Priority)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarihler -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Oluşturma Tarihi</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm") - @Model.CreatedBy
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Son Güncelleme</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @Model.LastModified.ToString("dd.MM.yyyy HH:mm") - @Model.LastModifiedBy
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deadline'lar -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Teslim Tarihi</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @if (Model.Deadline.HasValue)
+                        {
+                            <span class="@EffortHelper.GetDeadlineClass(Model.Deadline)">
+                                @Model.Deadline.Value.ToString("dd.MM.yyyy")
+                            </span>
+                        }
+                        else
+                        {
+                            <span>Tarih belirtilmemiş</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">KKT Deadline</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @(Model.KKTDeadline?.ToString("dd.MM.yyyy") ?? "Tarih belirtilmemiş")
+                    </div>
+                </div>
+            </div>
+
+            <!-- Efor Saatleri -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Analist Saat</label>
+                    <div style="padding: 12px; background: #f8fafc; font-size: 1.2rem; font-weight: bold;">
+                        @Model.AnalystHours.ToString("0.0")
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Yazılım Saat</label>
+                    <div style="padding: 12px; background: #f8fafc; font-size: 1.2rem; font-weight: bold;">
+                        @Model.DeveloperHours.ToString("0.0")
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">KKT Saat</label>
+                    <div style="padding: 12px; background: #f8fafc; font-size: 1.2rem; font-weight: bold;">
+                        @Model.KKTHours.ToString("0.0")
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Atanan Kişi</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @(string.IsNullOrEmpty(Model.Assignee) ? "Atanmamış" : Model.Assignee)
+                    </div>
+                </div>
+            </div>
+
+            <!-- İş Büyüklüğü Analizi -->
+            <div class="form-group">
+                <label class="form-label">İş Büyüklüğü Analizi</label>
+                <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 2rem; font-weight: bold; color: #667eea;">@Model.TotalHours.ToString("0.0")</div>
+                            <div style="font-size: 0.9rem; color: #64748b;">Toplam Saat</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2rem; font-weight: bold; color: #667eea;">@Model.TotalManDays.ToString("0.0")</div>
+                            <div style="font-size: 0.9rem; color: #64748b;">Adam-Gün</div>
+                        </div>
+                        <div>
+                            <div class="difficulty-badge @GetSizeCss(Model.Size)" style="font-size: 1.2rem; padding: 0.5rem 1rem;">
+                                @Model.Size.ToString()
+                            </div>
+                            <div style="font-size: 0.9rem; color: #64748b; margin-top: 0.5rem;">T-Shirt Size</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dosyalar (Viewer da görebilir) -->
+            <div class="form-group">
+                <label class="form-label">Eklenen Dosyalar</label>
+                <div id="filesList" style="background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                    <div id="loadingFiles">Dosyalar yükleniyor...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dosyaları yükle
+    loadFiles(@Model.Id);
+
+    function loadFiles(requestId) {
+        fetch(`/Request/GetFiles?requestId=${requestId}`)
+            .then(response => response.json())
+            .then(data => {
+                const filesList = document.getElementById('filesList');
+
+                if (data.success && data.files && data.files.length > 0) {
+                    const filesHtml = data.files.map(file => `
+                        <div class="file-item">
+                            <div>
+                                <span class="file-name">📄 ${file.originalName}</span>
+                                <span class="file-size">(${formatFileSize(file.fileSize)})</span>
+                            </div>
+                            <a href="/Request/DownloadFile?requestId=${requestId}&fileName=${file.originalName}"
+                               class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">
+                                ⬇️ İndir
+                            </a>
+                        </div>
+                    `).join('');
+
+                    filesList.innerHTML = `
+                        <h4 style="margin-bottom: 1rem;">Dosyalar (${data.files.length})</h4>
+                        ${filesHtml}
+                    `;
+                } else {
+                    filesList.innerHTML = '<p style="color: #64748b;">Bu projeye ait dosya bulunmuyor.</p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('filesList').innerHTML = '<p style="color: #ef4444;">Dosyalar yüklenemedi.</p>';
+            });
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+</script>
+
+@functions {
+    string GetStatusCss(RequestStatusEnum status)
+    {
+        return status switch
+        {
+            RequestStatusEnum.New => "status-new",
+            RequestStatusEnum.InProgress => "status-inprogress",
+            RequestStatusEnum.Testing => "status-testing",
+            RequestStatusEnum.Completed => "status-completed",
+            RequestStatusEnum.Cancelled => "status-cancelled",
+            _ => "status-new"
+        };
+    }
+
+    string GetPriorityCss(PriorityLevel priority)
+    {
+        return priority switch
+        {
+            PriorityLevel.Low => "diff-1",
+            PriorityLevel.Medium => "diff-2",
+            PriorityLevel.High => "diff-3",
+            PriorityLevel.Critical => "diff-4",
+            _ => "diff-2"
+        };
+    }
+
+    string GetPriorityText(PriorityLevel priority)
+    {
+        return priority switch
+        {
+            PriorityLevel.Low => "Düşük",
+            PriorityLevel.Medium => "Orta",
+            PriorityLevel.High => "Yüksek",
+            PriorityLevel.Critical => "Kritik",
+            _ => "Orta"
+        };
+    }
+
+    string GetSizeCss(TShirtSizeEnum size)
+    {
+        return size switch
+        {
+            TShirtSizeEnum.FastTrack => "diff-1",
+            TShirtSizeEnum.XS => "diff-1",
+            TShirtSizeEnum.S => "diff-2",
+            TShirtSizeEnum.M => "diff-3",
+            TShirtSizeEnum.L => "diff-4",
+            TShirtSizeEnum.XL => "diff-5",
+            _ => "diff-1"
+        };
+    }
+}

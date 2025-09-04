@@ -1,0 +1,110 @@
+﻿@model EforTakipUygulamasi.Models.User
+
+@{
+    ViewData["Title"] = "Kullanıcı Düzenle";
+}
+
+<div class="container">
+    <h1>Kullanıcı Düzenle: @Model.FullName</h1>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+    {
+        <div class="notification show" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            @ViewBag.ErrorMessage
+            <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+    }
+
+    <div class="work-items">
+        <div style="padding: 2rem;">
+            <form method="post">
+                <input type="hidden" name="Id" value="@Model.Id" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="FullName">Ad Soyad *</label>
+                        <input type="text"
+                               class="form-input"
+                               id="FullName"
+                               name="FullName"
+                               value="@Model.FullName"
+                               placeholder="Örn: Ahmet Yılmaz"
+                               required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="Username">Kullanıcı Adı *</label>
+                        <input type="text"
+                               class="form-input"
+                               id="Username"
+                               name="Username"
+                               value="@Model.Username"
+                               placeholder="Örn: ahmet.yilmaz"
+                               required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="Email">Email Adresi *</label>
+                        <input type="email"
+                               class="form-input"
+                               id="Email"
+                               name="Email"
+                               value="@Model.Email"
+                               placeholder="Örn: ahmet@company.com"
+                               required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="Role">Kullanıcı Rolü *</label>
+                        <select class="form-input" id="Role" name="Role" required>
+                            <option value="1">👑 Yönetici (Admin)</option>
+                            <option value="2">💻 Geliştirici (Developer)</option>
+                            <option value="3">👁️ Görüntüleyici (Viewer)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hesap Durumu</label>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") />
+                            <span style="color: #059669;">✅ Aktif</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="IsActive" value="false" @(!Model.IsActive ? "checked" : "") />
+                            <span style="color: #dc2626;">❌ Pasif</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    <p><strong>Hesap Bilgileri:</strong></p>
+                    <p>📅 Oluşturma: @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
+                    <p>🔐 Son Giriş: @(Model.LastLogin?.ToString("dd.MM.yyyy HH:mm") ?? "Hiç giriş yapmamış")</p>
+                    <p>⚠️ Başarısız Deneme: @Model.FailedLoginAttempts</p>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: end; margin-top: 2rem;">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">❌ İptal</a>
+                    <button type="submit" class="btn btn-primary">✅ Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sayfa yüklendiğinde seçili rolü ayarla
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('Role');
+        const currentRole = '@((int)Model.Role)';
+        console.log('Current role:', currentRole);
+
+        if (currentRole) {
+            roleSelect.value = currentRole;
+        }
+    });
+</script>

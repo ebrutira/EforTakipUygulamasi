@@ -1,256 +1,370 @@
 ﻿@model EforTakipUygulamasi.Models.Request
+
 @{
-    ViewData["Title"] = "Yeni İş Ekle";
+    ViewData["Title"] = "Yeni Talep Oluştur";
 }
 
 <div class="container">
-    <div class="modal-content" style="position: static; margin: 2rem auto; max-width: 800px;">
-        <h2>Yeni İş Ekle</h2>
+    <h1>Yeni Talep Oluştur</h1>
 
-        <form asp-action="Create" id="workForm">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="notification show" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            @TempData["ErrorMessage"]
+            <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+    }
 
-            <!-- YENİ: Proje ID Alanı -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="ProjectId" class="form-label">Proje ID (6 Hane)</label>
-                    <input asp-for="ProjectId" class="form-input project-id-field"
-                           placeholder="@ViewBag.SuggestedProjectId"
-                           maxlength="6"
-                           title="Boş bırakırsanız otomatik atanır" />
-                    <span asp-validation-for="ProjectId" class="text-danger"></span>
-                    <small style="color: #666; font-size: 0.8rem;">
-                        Boş bırakırsanız otomatik: <strong>@ViewBag.SuggestedProjectId</strong> atanır
-                    </small>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Name" class="form-label">İş Başlığı</label>
-                    <input asp-for="Name" class="form-input" required />
-                    <span asp-validation-for="Name" class="text-danger"></span>
-                </div>
-            </div>
+    <div class="work-items">
+        <div style="padding: 2rem;">
+            <form method="post" id="createForm">
 
-            <div class="form-group">
-                <label asp-for="Description" class="form-label">Açıklama</label>
-                <textarea asp-for="Description" class="form-input textarea"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
+                <!-- Temel Bilgiler -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="ProjectId">Proje ID</label>
+                        <input type="text"
+                               class="form-input project-id-field"
+                               id="ProjectId"
+                               name="ProjectId"
+                               value="@Model.ProjectId"
+                               placeholder="@ViewBag.SuggestedProjectId" />
+                        <small style="color: #64748b;">Boş bırakırsanız otomatik oluşturulur: @ViewBag.SuggestedProjectId</small>
+                    </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="Status" class="form-label">Durum</label>
-                    <select asp-for="Status" class="form-input">
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.New">Bekleyen</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.InProgress">Devam Eden</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Testing">Test</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Completed">Tamamlandı</option>
-                        <option value="@EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled">İptal</option>
-                    </select>
-                    <span asp-validation-for="Status" class="text-danger"></span>
+                    <div class="form-group">
+                        <label class="form-label" for="Name">Talep Adı *</label>
+                        <input type="text"
+                               class="form-input"
+                               id="Name"
+                               name="Name"
+                               value="@Model.Name"
+                               placeholder="Örn: Dashboard Geliştirme"
+                               required />
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="Priority" class="form-label">Öncelik</label>
-                    <select asp-for="Priority" class="form-input">
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Low">Düşük</option>
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Medium">Orta</option>
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.High">Yüksek</option>
-                        <option value="@EforTakipUygulamasi.Common.PriorityLevel.Critical">Kritik</option>
-                    </select>
-                    <span asp-validation-for="Priority" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Deadline" class="form-label">Teslim Tarihi</label>
-                    <input asp-for="Deadline" type="date" class="form-input" />
-                    <span asp-validation-for="Deadline" class="text-danger"></span>
-                </div>
-            </div>
 
-            <div class="form-row">
+                <!-- Açıklama -->
                 <div class="form-group">
-                    <label asp-for="AnalystHours" class="form-label">Analist Saati</label>
-                    <input asp-for="AnalystHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
-                    <span asp-validation-for="AnalystHours" class="text-danger"></span>
+                    <label class="form-label" for="Description">Açıklama</label>
+                    <textarea class="form-input textarea"
+                              id="Description"
+                              name="Description"
+                              rows="4"
+                              placeholder="Talep detaylarını açıklayın...">@Model.Description</textarea>
                 </div>
-                <div class="form-group">
-                    <label asp-for="DeveloperHours" class="form-label">Yazılımcı Saati</label>
-                    <input asp-for="DeveloperHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
-                    <span asp-validation-for="DeveloperHours" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="KKTHours" class="form-label">KKT/Preprod Saati</label>
-                    <input asp-for="KKTHours" type="number" step="0.5" min="0" class="form-input" value="0" onchange="calculateTotalHours()" />
-                    <span asp-validation-for="KKTHours" class="text-danger"></span>
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="KKTDeadline" class="form-label">KKT Teslim Tarihi</label>
-                    <input asp-for="KKTDeadline" type="date" class="form-input" />
-                    <span asp-validation-for="KKTDeadline" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Assignee" class="form-label">Atanan Kişi</label>
-                    <input asp-for="Assignee" class="form-input" />
-                    <span asp-validation-for="Assignee" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Toplam Saat</label>
-                    <div class="form-input" style="background: #f7fafc; font-weight: bold;" id="totalHoursDisplay">0.0</div>
-                </div>
-            </div>
+                <!-- Tarihler -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="Deadline">Teslim Tarihi</label>
+                        <input type="date"
+                               class="form-input"
+                               id="Deadline"
+                               name="Deadline"
+                               value="@Model.Deadline?.ToString("yyyy-MM-dd")" />
+                    </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Adam-Gün</label>
-                    <div class="form-input" style="background: #f7fafc;" id="manDaysDisplay">0.0</div>
+                    <div class="form-group">
+                        <label class="form-label" for="KKTDeadline">KKT Deadline</label>
+                        <input type="date"
+                               class="form-input"
+                               id="KKTDeadline"
+                               name="KKTDeadline"
+                               value="@Model.KKTDeadline?.ToString("yyyy-MM-dd")" />
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">T-Shirt Size</label>
-                    <div class="form-input" style="background: #f7fafc;" id="sizeDisplay">FastTrack</div>
-                </div>
-            </div>
 
-            <!-- YENİ: Dosya Yükleme Alanı -->
-            <div class="form-group">
-                <label class="form-label">Dosyalar (Word, PDF, Excel, Resim)</label>
-                <div class="file-upload-area" id="fileUploadArea">
-                    <i class="fas fa-upload fa-2x" style="color: #667eea; margin-bottom: 1rem;"></i>
-                    <p>Dosyaları buraya sürükleyin veya <strong>tıklayın</strong></p>
-                    <p style="font-size: 0.8rem; color: #666;">Desteklenen formatlar: .doc, .docx, .pdf, .xls, .xlsx, .png, .jpg</p>
-                    <input type="file" id="fileInput" multiple accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg" style="display: none;">
-                </div>
-                <div class="file-list" id="fileList"></div>
-            </div>
+                <!-- Durum ve Öncelik -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="Status">İş Durumu *</label>
+                        <select class="form-input" id="Status" name="Status" required>
+                            <option value="1" selected>Bekleyen</option>
+                            <option value="2">Devam Eden</option>
+                            <option value="3">Test</option>
+                            <option value="5">Tamamlandı</option>
+                            <option value="6">İptal</option>
+                        </select>
+                    </div>
 
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                <a href="@Url.Action("Index")" class="btn btn-secondary">İptal</a>
-                <button type="submit" class="btn btn-primary">Kaydet</button>
-            </div>
-        </form>
+                    <div class="form-group">
+                        <label class="form-label" for="Priority">Öncelik</label>
+                        <select class="form-input" id="Priority" name="Priority">
+                            <option value="1">Düşük</option>
+                            <option value="2" selected>Orta</option>
+                            <option value="3">Yüksek</option>
+                            <option value="4">Kritik</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Efor Saatleri -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="AnalystHours">Analist Saat</label>
+                        <input type="number"
+                               class="form-input"
+                               id="AnalystHours"
+                               name="AnalystHours"
+                               value="@Model.AnalystHours"
+                               min="0"
+                               step="0.5"
+                               placeholder="0.0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="DeveloperHours">Yazılım Saat</label>
+                        <input type="number"
+                               class="form-input"
+                               id="DeveloperHours"
+                               name="DeveloperHours"
+                               value="@Model.DeveloperHours"
+                               min="0"
+                               step="0.5"
+                               placeholder="0.0" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="KKTHours">KKT Saat</label>
+                        <input type="number"
+                               class="form-input"
+                               id="KKTHours"
+                               name="KKTHours"
+                               value="@Model.KKTHours"
+                               min="0"
+                               step="0.5"
+                               placeholder="0.0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="Assignee">Atanan Kişi</label>
+                        <input type="text"
+                               class="form-input"
+                               id="Assignee"
+                               name="Assignee"
+                               value="@Model.Assignee"
+                               placeholder="Örn: Ahmet Yılmaz" />
+                    </div>
+                </div>
+
+                <!-- İş Büyüklüğü Hesaplaması -->
+                <div class="form-group">
+                    <label class="form-label">İş Büyüklüğü Analizi</label>
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-around; text-align: center;">
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;" id="totalHours">0.0</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">Toplam Saat</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;" id="manDays">0.0</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">Adam-Gün</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.2rem; font-weight: bold;" id="tshirtSize">Fast Track</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">T-Shirt Size</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dosya Yükleme -->
+                <div class="form-group">
+                    <label class="form-label">Dosya Ekle</label>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div style="text-align: center; padding: 1rem;">
+                            <p>Dosyaları buraya sürükleyin veya tıklayın</p>
+                            <input type="file" id="fileInput" multiple style="display: none;"
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.csv">
+                            <small style="color: #64748b;">PDF, Word, Excel, Resim, CSV (Max: 10MB)</small>
+                        </div>
+                    </div>
+                    <div id="uploadedFilesList" style="margin-top: 1rem;"></div>
+                </div>
+
+                <!-- Form Butonları -->
+                <div style="display: flex; gap: 1rem; justify-content: end; margin-top: 2rem;">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">İptal</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Talep Oluştur</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            calculateTotalHours();
-            setupFileUpload();
+<script>
+    let uploadedFiles = [];
 
-            // Proje ID otomatik büyük harf
-            $('#ProjectId').on('input', function() {
-                this.value = this.value.toUpperCase();
+    // Dosya yükleme işlemleri
+    document.getElementById('fileUploadArea').addEventListener('click', function() {
+        document.getElementById('fileInput').click();
+    });
+
+    document.getElementById('fileUploadArea').addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    document.getElementById('fileUploadArea').addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    document.getElementById('fileUploadArea').addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files);
+        handleFiles(files);
+    });
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const files = Array.from(this.files);
+        handleFiles(files);
+    });
+
+    function handleFiles(files) {
+        files.forEach(file => {
+            if (file.size > 10 * 1024 * 1024) {
+                alert(file.name + ' dosyası 10MB\'dan büyük');
+                return;
+            }
+
+            const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.png', '.jpg', '.jpeg', '.csv'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+
+            if (!allowedTypes.includes(fileExt)) {
+                alert(file.name + ' desteklenmeyen format');
+                return;
+            }
+
+            uploadedFiles.push({
+                file: file,
+                name: file.name,
+                size: file.size
             });
+
+            updateFilesList();
         });
+    }
 
-        function calculateTotalHours() {
-            const analyst = parseFloat($('[name="AnalystHours"]').val()) || 0;
-            const developer = parseFloat($('[name="DeveloperHours"]').val()) || 0;
-            const kkt = parseFloat($('[name="KKTHours"]').val()) || 0;
+    function updateFilesList() {
+        const filesList = document.getElementById('uploadedFilesList');
 
-            const total = analyst + developer + kkt;
-            const manDays = total / 8;
-
-            $('#totalHoursDisplay').text(total.toFixed(1));
-            $('#manDaysDisplay').text(manDays.toFixed(1));
-
-            // T-Shirt Size hesaplama
-            let size = 'FastTrack';
-            if (manDays <= 5) size = 'FastTrack';
-            else if (manDays <= 10) size = 'XS';
-            else if (manDays <= 25) size = 'S';
-            else if (manDays <= 50) size = 'M';
-            else if (manDays <= 100) size = 'L';
-            else size = 'XL';
-
-            $('#sizeDisplay').text(size);
+        if (uploadedFiles.length === 0) {
+            filesList.innerHTML = '';
+            return;
         }
 
-        function setupFileUpload() {
-            const uploadArea = $('#fileUploadArea');
-            const fileInput = $('#fileInput');
-            const fileList = $('#fileList');
-            let selectedFiles = [];
+        const filesHtml = uploadedFiles.map((fileObj, index) => `
+            <div class="file-item">
+                <div>
+                    <span class="file-name">${fileObj.name}</span>
+                    <span class="file-size">(${formatFileSize(fileObj.size)})</span>
+                </div>
+                <button type="button" class="remove-file-btn" onclick="removeFile(${index})">×</button>
+            </div>
+        `).join('');
 
-            // Click to select
-            uploadArea.on('click', function() {
-                fileInput.click();
-            });
+        filesList.innerHTML = `
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                <h4>Eklenecek Dosyalar (${uploadedFiles.length})</h4>
+                ${filesHtml}
+            </div>
+        `;
+    }
 
-            // File selection
-            fileInput.on('change', function() {
-                handleFiles(this.files);
-            });
+    function removeFile(index) {
+        uploadedFiles.splice(index, 1);
+        updateFilesList();
+    }
 
-            // Drag and drop
-            uploadArea.on('dragover dragenter', function(e) {
-                e.preventDefault();
-                uploadArea.addClass('dragover');
-            });
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
 
-            uploadArea.on('dragleave', function() {
-                uploadArea.removeClass('dragover');
-            });
+    function calculateTotals() {
+        const analyst = parseFloat(document.getElementById('AnalystHours').value) || 0;
+        const developer = parseFloat(document.getElementById('DeveloperHours').value) || 0;
+        const kkt = parseFloat(document.getElementById('KKTHours').value) || 0;
 
-            uploadArea.on('drop', function(e) {
-                e.preventDefault();
-                uploadArea.removeClass('dragover');
-                handleFiles(e.originalEvent.dataTransfer.files);
-            });
+        const totalHours = analyst + developer + kkt;
+        const manDays = totalHours / 8;
 
-            function handleFiles(files) {
-                Array.from(files).forEach(file => {
-                    if (validateFile(file)) {
-                        selectedFiles.push(file);
-                        addFileToList(file);
-                    }
-                });
-            }
+        let tshirtSize = 'Fast Track';
+        let color = '#28a745';
 
-            function validateFile(file) {
-                const allowedTypes = ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'];
-                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        if (manDays > 100) { tshirtSize = 'XL'; color = '#6f42c1'; }
+        else if (manDays > 50) { tshirtSize = 'L'; color = '#dc3545'; }
+        else if (manDays > 25) { tshirtSize = 'M'; color = '#fd7e14'; }
+        else if (manDays > 10) { tshirtSize = 'S'; color = '#ffc107'; }
+        else if (manDays > 5) { tshirtSize = 'XS'; color = '#28a745'; }
 
-                if (!allowedTypes.includes(fileExtension)) {
-                    alert('Desteklenmeyen dosya formatı: ' + fileExtension);
-                    return false;
-                }
+        document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+        document.getElementById('manDays').textContent = manDays.toFixed(1);
+        document.getElementById('tshirtSize').textContent = tshirtSize;
+        document.getElementById('tshirtSize').style.color = color;
+    }
 
-                if (file.size > 10 * 1024 * 1024) { // 10MB
-                    alert('Dosya boyutu 10MB\'dan büyük olamaz.');
-                    return false;
-                }
+    document.getElementById('AnalystHours').addEventListener('input', calculateTotals);
+    document.getElementById('DeveloperHours').addEventListener('input', calculateTotals);
+    document.getElementById('KKTHours').addEventListener('input', calculateTotals);
 
-                return true;
-            }
+    document.addEventListener('DOMContentLoaded', calculateTotals);
 
-            function addFileToList(file) {
-                const fileItem = $(`
-                    <div class="file-item">
-                        <div>
-                            <span class="file-name">${file.name}</span>
-                            <span class="file-size">(${formatFileSize(file.size)})</span>
-                        </div>
-                        <button type="button" class="remove-file-btn" onclick="removeFile('${file.name}')">×</button>
-                    </div>
-                `);
-                fileList.append(fileItem);
-            }
-
-            function formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-
-            window.removeFile = function(fileName) {
-                selectedFiles = selectedFiles.filter(f => f.name !== fileName);
-                fileList.find('.file-item').filter(function() {
-                    return $(this).find('.file-name').text() === fileName;
-                }).remove();
-            };
+    // Form submit - dosyalar varsa önce talebi oluştur sonra dosyaları yükle
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+        if (uploadedFiles.length === 0) {
+            // Dosya yoksa normal submit
+            return;
         }
-    </script>
-}
+
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Oluşturuluyor...';
+
+        try {
+            // Önce talebi oluştur
+            const formData = new FormData(this);
+
+            const response = await fetch('/Request/Create', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                // Talep oluşturuldu, şimdi dosyaları yükle
+                const allRequests = await fetch('/Request/GetAllJson').then(r => r.json());
+                const lastRequest = allRequests[allRequests.length - 1];
+
+                // Dosyaları yükle
+                for (const fileObj of uploadedFiles) {
+                    const fileFormData = new FormData();
+                    fileFormData.append('file', fileObj.file);
+
+                    await fetch(`/Request/UploadFile?requestId=${lastRequest.Id}`, {
+                        method: 'POST',
+                        body: fileFormData
+                    });
+                }
+
+                window.location.href = '/Request/Index';
+            } else {
+                alert('Talep oluşturulamadı');
+            }
+        } catch (error) {
+            alert('Hata: ' + error.message);
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Talep Oluştur';
+    });
+</script>

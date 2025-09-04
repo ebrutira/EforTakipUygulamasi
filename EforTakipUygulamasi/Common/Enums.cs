@@ -31,17 +31,17 @@
     public enum UserRole
     {
         Admin = 1,
-        Contributor = 2,
-        Viewer = 3
+        Developer = 2,
+        Viewer = 3,
     }
 
     // Yeni: Deadline durum enum'u
     public enum DeadlineStatus
     {
-        Overdue,     // Gecikmiş (kırmızı)
-        Critical,    // 2 hafta kaldı (kırmızı)
-        Warning,     // 4 hafta kaldı (turuncu)
-        Caution,     // 6 hafta kaldı (sarı)
-        Normal       // 8+ hafta (yeşil)
+        Overdue,     
+        Critical,    
+        Warning,   
+        Caution,   
+        Normal      
     }
 }

@@ -57,10 +57,6 @@
                     <span>🧪 KKT:</span>
                     <strong>@Model.KKTTotalHours.ToString("F1") saat</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>🚀 Preprod:</span>
-                    <strong>@Model.PreprodTotalHours.ToString("F1") saat</strong>
-                </div>
             </div>
         </div>
 
@@ -69,12 +65,12 @@
             <h3 style="margin-bottom: 1rem; color: #333;">Performans Metrikleri</h3>
             <div style="display: grid; gap: 0.5rem;">
                 <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>📅 Bu Ay Oluşturulan:</span>
-                    <strong>@Model.ThisMonthCreated talep</strong>
+                    <span>📆 Bu Yıl Oluşturulan:</span>
+                    <strong>@Model.ThisYearCreated talep</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>📆 Bu Hafta Oluşturulan:</span>
-                    <strong>@Model.ThisWeekCreated talep</strong>
+                    <span>📅 Bu Ay Oluşturulan:</span>
+                    <strong>@Model.ThisMonthCreated talep</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
                     <span>✅ Tamamlanma Oranı:</span>

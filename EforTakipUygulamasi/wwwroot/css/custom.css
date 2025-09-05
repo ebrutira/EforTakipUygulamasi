@@ -4,10 +4,19 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f8fafc;
     color: #1e293b;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
@@ -33,6 +42,10 @@ body {
 
 .user-info {
     font-size: 0.9rem;
+}
+
+main {
+    flex: 1;
 }
 
 .container {
@@ -151,7 +164,7 @@ body {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: transparent; 
+    color: transparent;
 }
 
 .stat-label {
@@ -666,6 +679,25 @@ body {
     }
 }
 
+/* FOOTER - Header ile aynı stil */
+.simple-footer {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1);
+    margin-top: auto;
+    width: 100%;
+}
+
+.simple-footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
 @media (max-width: 1024px) {
     .table-header, .work-item {
         grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -717,5 +749,14 @@ body {
 
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    .simple-footer {
+        padding: 0.75rem 0;
+    }
+
+    .simple-footer-content {
+        padding: 0 1rem;
+        font-size: 0.8rem;
     }
 }

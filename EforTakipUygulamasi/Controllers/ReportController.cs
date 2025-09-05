@@ -33,7 +33,7 @@ namespace EforTakipUygulamasi.Controllers
                     KKTTotalHours = requests.Sum(r => r.KKTHours),
                     PreprodTotalHours = requests.Sum(r => r.PreprodHours),
 
-                    ThisWeekCreated = requests.Count(r => r.CreatedDate >= DateTime.Now.AddDays(-7)),
+                    ThisYearCreated = requests.Count(r => r.CreatedDate.Year == DateTime.Now.Year),
                     ThisMonthCreated = requests.Count(r => r.CreatedDate.Month == DateTime.Now.Month),
 
                     CompletionRate = requests.Count > 0 ?
@@ -107,7 +107,7 @@ namespace EforTakipUygulamasi.Controllers
         public decimal KKTTotalHours { get; set; } = 0;
         public decimal PreprodTotalHours { get; set; } = 0;
 
-        public int ThisWeekCreated { get; set; } = 0;
+        public int ThisYearCreated { get; set; } = 0;
         public int ThisMonthCreated { get; set; } = 0;
         public double CompletionRate { get; set; } = 0;
         public double OverdueRate { get; set; } = 0;

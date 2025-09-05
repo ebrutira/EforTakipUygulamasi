@@ -104,7 +104,7 @@
                     <div class="form-input" style="background: #f7fafc;" id="manDaysDisplay">@Model.TotalManDays.ToString("F1")</div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">T-Shirt Size</label>
+                    <label class="form-label">İş Büyüklüğü</label>
                     <div class="form-input" style="background: #f7fafc;" id="sizeDisplay">@Model.Size</div>
                 </div>
                 <div class="form-group">
@@ -227,7 +227,6 @@
             document.getElementById('totalHoursDisplay').textContent = total.toFixed(1);
             document.getElementById('manDaysDisplay').textContent = manDays.toFixed(1);
 
-            // T-Shirt Size hesaplama
             var size = 'FastTrack';
             if (manDays <= 5) size = 'FastTrack';
             else if (manDays <= 10) size = 'XS';

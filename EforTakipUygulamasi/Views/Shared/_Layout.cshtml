@@ -24,30 +24,30 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="tab-navigation">
-            <a href="/Dashboard/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active" : "")">
-                Dashboard
-            </a>
-            <a href="/Request/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Request" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
-                Talepler
-            </a>
-            <a href="/Report/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Report" ? "active" : "")">
-                Raporlar
-            </a>
-            @{
-                var currentUserRole = Context.Session.GetInt32("UserRole") ?? 3;
-            }
-            @if (currentUserRole == 1) // Admin
-            {
-                <a href="/User/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
-                    Kullanıcı Yönetimi
-                </a>
-            }
-        </div>
-    </div>
-
     <main>
+        <div class="container">
+            <div class="tab-navigation">
+                <a href="/Dashboard/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                    Dashboard
+                </a>
+                <a href="/Request/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Request" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                    Talepler
+                </a>
+                <a href="/Report/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Report" ? "active" : "")">
+                    Raporlar
+                </a>
+                @{
+                    var currentUserRole = Context.Session.GetInt32("UserRole") ?? 3;
+                }
+                @if (currentUserRole == 1) // Admin
+                {
+                    <a href="/User/Index" class="tab-button @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
+                        Kullanıcı Yönetimi
+                    </a>
+                }
+            </div>
+        </div>
+
         @if (TempData["ErrorMessage"] != null)
         {
             <div class="container">
@@ -57,9 +57,15 @@
                 </div>
             </div>
         }
-
         @RenderBody()
     </main>
+
+    <!-- FOOTER - Container DIŞINDA -->
+    <footer class="simple-footer">
+        <div class="simple-footer-content">
+            Copyright © Efor Takip Sistemi - 2025
+        </div>
+    </footer>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

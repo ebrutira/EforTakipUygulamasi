@@ -91,6 +91,17 @@ namespace EforTakipUygulamasi.Controllers
                 request.LastModified = DateTime.Now;
                 request.LastModifiedBy = HttpContext.Session.GetString("FullName") ?? "Kullanıcı";
 
+                // Yürütme tarihini ilk geçişte kaydet
+                if ((RequestStatusEnum)newStatus == RequestStatusEnum.InProgress && request.InProgressDate == null)
+                {
+                    request.InProgressDate = DateTime.Now;
+                }
+                // Tamamlanma tarihini kaydet
+                if ((RequestStatusEnum)newStatus == RequestStatusEnum.Completed)
+                {
+                    request.CompletedDate = DateTime.Now;
+                }
+
                 _repository.Update(request);
 
                 var statusText = EffortHelper.StatusToString(request.Status);

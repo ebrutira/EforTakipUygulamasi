@@ -4,110 +4,198 @@
 }
 
 <div class="container">
-    <!-- Rapor Başlığı -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    
+
+    
+
+    <!-- Yürütme Süresi Trend (Boyut Bazlı) -->
     <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1 style="margin: 0; color: #333;">📊 Efor Takip Raporları</h1>
-            <div style="display: flex; gap: 1rem;">
-                <a href="/Report/ExportData?format=csv" class="btn btn-secondary">📄 CSV İndir</a>
-                <a href="/Report/ExportData?format=json" class="btn btn-primary">📁 JSON İndir</a>
+        <div style="display:flex; justify-content: space-between; align-items:center; gap:1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <h3 style="margin: 0; color:#333;">🕒 Ortalama İş Eritme Hızı</h3>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+                <label for="sizeFilter" style="margin-right: 0.25rem; color:#555;">İş Büyüklüğü:</label>
+                <select id="sizeFilter" class="select" style="min-width: 160px;">
+                    <option value="FastTrack">FastTrack</option>
+                    <option value="XS" selected>XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                </select>
+                <label for="periodFilter" style="margin-left: 0.75rem; margin-right: 0.25rem; color:#555;">Dönem:</label>
+                <select id="periodFilter" class="select" style="min-width: 160px;">
+                    <option value="daily">Günlük (Ham)</option>
+                    <option value="monthly" selected>Aylık Ortalama</option>
+                    <option value="yearly">Yıllık Ortalama</option>
+                </select>
             </div>
         </div>
-        <p style="color: #666; margin: 0.5rem 0 0 0;">Son güncelleme: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
+        <div style="height:300px;">
+            <canvas id="leadTimeChart"></canvas>
+                </div>
+        <small style="color:#64748b;">Not: Yalnızca Yürütmeye geçiş ve Tamamlanma tarihi olan işler dahil edilir.</small>
     </div>
 
-    <!-- Basit İstatistikler -->
-    <div class="dashboard-stats">
-        <div class="stat-card">
-            <div class="stat-value">@Model.TotalRequests</div>
-            <div class="stat-label">Toplam Talep</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">@Model.CompletedRequests</div>
-            <div class="stat-label">Tamamlanan</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">@Model.InProgressRequests</div>
-            <div class="stat-label">Devam Eden</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">@Model.TotalHours.ToString("F0")</div>
-            <div class="stat-label">Toplam Saat</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">@(Model.TotalRequests > 0 ? (Model.TotalHours / Model.TotalRequests).ToString("F1") : "0")</div>
-            <div class="stat-label">Ortalama Saat</div>
-        </div>
+    
     </div>
 
-    <!-- Efor Dağılımı -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <h3 style="margin-bottom: 1rem; color: #333;">Efor Dağılımı</h3>
-            <div style="display: grid; gap: 0.5rem;">
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>👨‍💼 Analiz:</span>
-                    <strong>@Model.AnalystTotalHours.ToString("F1") saat</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>💻 Yazılım:</span>
-                    <strong>@Model.DeveloperTotalHours.ToString("F1") saat</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>🧪 KKT:</span>
-                    <strong>@Model.KKTTotalHours.ToString("F1") saat</strong>
-                </div>
-            </div>
-        </div>
+<script>
+    // Basit prop yardımcı (pascal/camel ikisini de destekler)
+    function getProp(obj, prop) {
+        return obj[prop] ?? obj[prop.charAt(0).toUpperCase() + prop.slice(1)];
+    }
 
-        <!-- Performans Metrikleri -->
-        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <h3 style="margin-bottom: 1rem; color: #333;">Performans Metrikleri</h3>
-            <div style="display: grid; gap: 0.5rem;">
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>📆 Bu Yıl Oluşturulan:</span>
-                    <strong>@Model.ThisYearCreated talep</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>📅 Bu Ay Oluşturulan:</span>
-                    <strong>@Model.ThisMonthCreated talep</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f7fafc; border-radius: 4px;">
-                    <span>✅ Tamamlanma Oranı:</span>
-                    <strong>@Model.CompletionRate.ToString("F1")%</strong>
-                </div>
-            </div>
-        </div>
-    </div>
+    function sizeToName(val) {
+        const map = ['FastTrack','XS','S','M','L','XL'];
+        if (typeof val === 'number') return map[val] || String(val);
+        const s = (val || '').toString();
+        if (/^\d+$/.test(s)) return map[Number(s)] || s;
+        return s;
+    }
 
-    <!-- Rapor Açıklaması -->
-    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 1rem; color: #333;">📋 Rapor Özeti</h3>
-        <div style="line-height: 1.6; color: #555;">
-            <p><strong>Genel Durum:</strong> Toplam @Model.TotalRequests iş talebi bulunmakta, bunların @Model.InProgressRequests'i aktif olarak devam etmekte, @Model.CompletedRequests'i tamamlanmış durumda.</p>
+    const ctxLead = document.getElementById('leadTimeChart');
+    let leadChart = null;
 
-            <p><strong>Efor Analizi:</strong> En çok efor yazılım geliştirme kısmında harcanmış (@Model.DeveloperTotalHours saat), bunu analist çalışmaları (@Model.AnalystTotalHours saat) takip ediyor.</p>
+    function renderLeadChart(requests, size, period) {
+        // Filtre: tamamlanmış ve tarihleri olan kayıtlar
+        const base = (requests || [])
+            .filter(r => {
+                const s = sizeToName(getProp(r,'size'));
+                return (s || '').toLowerCase() === size.toLowerCase();
+            })
+            .map(r => {
+                // Başlangıç: InProgressDate > CreatedDate; Bitiş: öncelik LastModified > CompletedDate
+                const startStr = getProp(r,'inProgressDate') || getProp(r,'InProgressDate') || getProp(r,'createdDate') || getProp(r,'CreatedDate');
+                const endStr = getProp(r,'lastModified') || getProp(r,'LastModified') || getProp(r,'completedDate') || getProp(r,'CompletedDate');
+                if (!startStr || !endStr) return null;
+                const start = new Date(startStr);
+                const end = new Date(endStr);
+                const durationDays = (end - start) / (1000 * 60 * 60 * 24);
+                const doneDate = end; // x ekseninde değişiklik tarihi
+                return {
+                    date: doneDate,
+                    label: doneDate.toLocaleDateString('tr-TR'),
+                    value: Math.max(0, Math.round(durationDays * 10) / 10)
+                };
+            })
+            .filter(Boolean)
+            .sort((a,b) => a.date - b.date);
 
-            <p><strong>Performans:</strong> Tamamlanma oranı %@Model.CompletionRate.ToString("F1") seviyesinde. Geciken iş oranı %@Model.OverdueRate.ToString("F1") ile @(Model.OverdueRate <= 10 ? "kabul edilebilir" : "iyileştirme gerektiren") seviyede.</p>
+        // Dönemsel grupla
+        let rows = base;
+        if (period === 'monthly') {
+            const map = new Map();
+            base.forEach(r => {
+                const y = r.date.getFullYear();
+                const m = r.date.getMonth() + 1; // 1-12
+                const key = `${y}-${m.toString().padStart(2,'0')}`;
+                if (!map.has(key)) map.set(key, []);
+                map.get(key).push(r.value);
+            });
+            rows = Array.from(map.entries())
+                .map(([k, arr]) => ({
+                    date: new Date(`${k}-01`),
+                    label: k.split('-').reverse().join('.'), // MM.YYYY
+                    value: Math.round((arr.reduce((s,v)=>s+v,0)/arr.length)*10)/10
+                }))
+                .sort((a,b)=>a.date-b.date);
+        } else if (period === 'yearly') {
+            const map = new Map();
+            base.forEach(r => {
+                const y = r.date.getFullYear();
+                const key = `${y}`;
+                if (!map.has(key)) map.set(key, []);
+                map.get(key).push(r.value);
+            });
+            rows = Array.from(map.entries())
+                .map(([k, arr]) => ({
+                    date: new Date(`${k}-01-01`),
+                    label: k,
+                    value: Math.round((arr.reduce((s,v)=>s+v,0)/arr.length)*10)/10
+                }))
+                .sort((a,b)=>a.date-b.date);
+        }
 
-            <p><strong>Öneriler:</strong></p>
-            <ul style="margin-left: 1.5rem;">
-                @if (Model.DeveloperTotalHours > Model.AnalystTotalHours * 2)
-                {
-                    <li>Yazılım geliştirme süreçleri optimize edilebilir</li>
+        const labels = rows.map(r => r.label);
+        const data = rows.map(r => r.value);
+
+        if (leadChart) {
+            leadChart.destroy();
+        }
+
+        leadChart = new Chart(ctxLead, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: `Ortalama İş Eritme Hızı (gün) - ${size} / ${period === 'monthly' ? 'Aylık' : period === 'yearly' ? 'Yıllık' : 'Günlük'}`,
+                    data,
+                    fill: false,
+                    borderColor: '#3b82f6',
+                    backgroundColor: '#93c5fd',
+                    tension: 0.2,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.parsed.y} gün`
+                        }
+                    }
                 }
-                @if (Model.KKTTotalHours < Model.DeveloperTotalHours * 0.3m)
-                {
-                    <li>Test süreçleri için daha fazla kaynak ayrılmalı</li>
+            }
+        });
+    }
+
+    // Veri yükle ve grafiği başlat
+    (function initLead() {
+        fetch('/Request/GetAllJson')
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('sizeFilter');
+                const periodSelect = document.getElementById('periodFilter');
+                function firstNonEmptySize() {
+                    const sizes = ['FastTrack','XS','S','M','L','XL'];
+                    for (const s of sizes) {
+                        const hasAny = (data || []).some(r => {
+                            const rs = (sizeToName(getProp(r,'size')) || '').toLowerCase();
+                            const startStr = getProp(r,'inProgressDate') || getProp(r,'InProgressDate') || getProp(r,'createdDate') || getProp(r,'CreatedDate');
+                            const endStr = getProp(r,'lastModified') || getProp(r,'LastModified') || getProp(r,'completedDate') || getProp(r,'CompletedDate');
+                            return rs === s.toLowerCase() && startStr && endStr;
+                        });
+                        if (hasAny) return s;
+                    }
+                    return 'XS';
                 }
-                @if (Model.OverdueRate > 10)
-                {
-                    <li>Deadline takibi güçlendirilmeli</li>
+
+                // İlk yüklemede veri olan ilk boyutu seç
+                const initial = firstNonEmptySize();
+                if (initial) {
+                    select.value = initial;
                 }
-                <li>Yazılım geliştirme süreçleri optimize edilebilir</li>
-                <li>Test süreçleri için daha fazla kaynak ayrılmalı</li>
-                <li>Deadline takibi güçlendirilmeli</li>
-            </ul>
-        </div>
-    </div>
-</div>
+
+                const update = () => {
+                    const currentSize = select.value || initial || 'XS';
+                    renderLeadChart(data, currentSize, periodSelect.value || 'monthly');
+                };
+                select.addEventListener('change', update);
+                periodSelect.addEventListener('change', update);
+                update();
+            })
+            .catch(() => {
+                // Sessiz geç
+            });
+    })();
+</script>

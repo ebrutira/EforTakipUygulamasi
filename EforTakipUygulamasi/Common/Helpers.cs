@@ -23,18 +23,19 @@ namespace EforTakipUygulamasi.Common
             return deadline.HasValue && deadline.Value < DateTime.Now;
         }
 
-        // GÜNCELLEME: Yeni durum metni
+        // GÜNCELLEME: Durum metinleri (Bekleyen → Havuz, Devam Eden → Yürütme, Test kaldırıldı)
         public static string StatusToString(RequestStatusEnum status)
         {
             return status switch
             {
-                RequestStatusEnum.New => "Bekleyen",        // Değişti: Yeni → Bekleyen
-                RequestStatusEnum.InProgress => "Devam Eden",
-                RequestStatusEnum.Testing => "Test",
+                RequestStatusEnum.New => "Havuz",
+                RequestStatusEnum.InProgress => "Yürütme",
+                // Test durumu görünümden kaldırıldı; varsa Yürütme olarak göster
+                RequestStatusEnum.Testing => "Yürütme",
                 RequestStatusEnum.OnHold => "Beklemede",     // Kullanılmayacak
                 RequestStatusEnum.Completed => "Tamamlandı",
                 RequestStatusEnum.Cancelled => "İptal",
-                _ => "Bekleyen"
+                _ => "Havuz"
             };
         }
 
@@ -68,6 +69,33 @@ namespace EforTakipUygulamasi.Common
             };
         }
 
+        // YENİ: Renk kuralı - tarih (KKT) ve efor toplamına göre
+        // Kurallar:
+        // - (tarih - bugün) saat >= 2x toplam saat  => yeşil (deadline-normal)
+        // - (tarih - bugün) saat > toplam saat     => turuncu (deadline-warning)
+        // - aksi halde                              => kırmızı (deadline-overdue)
+        public static string GetScheduleClass(DateTime? tarih, decimal totalHours)
+        {
+            if (!tarih.HasValue)
+            {
+                return "deadline-normal";
+            }
+
+            var daysRemaining = (tarih.Value.Date - DateTime.Today).Days;
+            decimal hoursRemaining = daysRemaining * 7m; // 7 saat/gün
+
+            if (hoursRemaining >= (2m * totalHours))
+            {
+                return "deadline-normal"; // yeşil
+            }
+            if (hoursRemaining > totalHours)
+            {
+                return "deadline-warning"; // turuncu/sarı
+            }
+
+            return "deadline-overdue"; // kırmızı
+        }
+
         // YENİ: Yaklaşan deadline sayısı
         public static int GetApproachingCount(List<Request> requests)
         {
@@ -77,10 +105,10 @@ namespace EforTakipUygulamasi.Common
                 GetDeadlineStatus(r.Deadline) == DeadlineStatus.Critical);
         }
 
-        // YENİ: Adam-gün hesaplama
+        // YENİ: Adam-gün hesaplama (7 saat/gün)
         public static decimal CalculateManDays(decimal totalHours)
         {
-            return Math.Round(totalHours / 8, 1);
+            return Math.Round(totalHours / 7, 1);
         }
 
         // YENİ: Otomatik ID oluştur

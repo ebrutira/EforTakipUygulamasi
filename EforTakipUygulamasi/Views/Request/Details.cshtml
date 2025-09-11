@@ -30,7 +30,7 @@
         <div style="padding: 2rem;">
 
             <!-- Temel Bilgiler -->
-            <div class="form-row">
+            <div class="form-row" style="display: flex; gap: 0.5rem; align-items: flex-end;">
                 <div class="form-group">
                     <label class="form-label">Proje ID</label>
                     <div class="project-id-field" style="padding: 12px; background: #f8fafc;">
@@ -38,7 +38,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="flex: 1;">
                     <label class="form-label">Talep Adı</label>
                     <div class="work-title" style="padding: 12px; background: #f8fafc;">
                         @Model.Name
@@ -95,7 +95,7 @@
             <!-- Deadline'lar -->
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Teslim Tarihi</label>
+                    <label class="form-label">Yaygınlaştırma tarihi</label>
                     <div style="padding: 12px; background: #f8fafc;">
                         @if (Model.Deadline.HasValue)
                         {
@@ -111,9 +111,54 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">KKT Deadline</label>
+                    <label class="form-label">Tarih</label>
                     <div style="padding: 12px; background: #f8fafc;">
-                        @(Model.KKTDeadline?.ToString("dd.MM.yyyy") ?? "Tarih belirtilmemiş")
+                        @if (Model.KKTDeadline.HasValue)
+                        {
+                            <span class="@EffortHelper.GetScheduleClass(Model.KKTDeadline, Model.TotalHours)">
+                                @Model.KKTDeadline.Value.ToString("dd.MM.yyyy")
+                            </span>
+                        }
+                        else
+                        {
+                            <span>Tarih belirtilmemiş</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yürütme/Tamamlanma ve Süre -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Yürütmeye Geçiş</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @(Model.InProgressDate?.ToString("dd.MM.yyyy HH:mm") ?? "-" )
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tamamlanma</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @(Model.CompletedDate?.ToString("dd.MM.yyyy HH:mm") ?? "-" )
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Yürütme Süresi</label>
+                    <div style="padding: 12px; background: #f8fafc;">
+                        @{
+                            if (Model.InProgressDate.HasValue && Model.CompletedDate.HasValue)
+                            {
+                                var span = Model.CompletedDate.Value - Model.InProgressDate.Value;
+                                <text>@Math.Round(span.TotalDays, 1) gün</text>;
+                            }
+                            else
+                            {
+                                <text>-</text>;
+                            }
+                        }
                     </div>
                 </div>
             </div>
@@ -121,7 +166,7 @@
             <!-- Efor Saatleri -->
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Analist Saat</label>
+                    <label class="form-label">Analiz Saat</label>
                     <div style="padding: 12px; background: #f8fafc; font-size: 1.2rem; font-weight: bold;">
                         @Model.AnalystHours.ToString("0.0")
                     </div>
@@ -137,16 +182,22 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">KKT Saat</label>
+                    <label class="form-label">Test Saat</label>
                     <div style="padding: 12px; background: #f8fafc; font-size: 1.2rem; font-weight: bold;">
                         @Model.KKTHours.ToString("0.0")
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">KKT/Preprod/Taşıma Saat</label>
+                    <div style="padding: 12px; background: #f8fafc; font-size: 1.2rem; font-weight: bold;">
+                        @Model.TasimaHours.ToString("0.0")
+                    </div>
+                </div>
 
                 <div class="form-group">
-                    <label class="form-label">Atanan Kişi</label>
+                    <label class="form-label">Azure Numarası</label>
                     <div style="padding: 12px; background: #f8fafc;">
-                        @(string.IsNullOrEmpty(Model.Assignee) ? "Atanmamış" : Model.Assignee)
+                        @(Model.AzureNumber?.ToString() ?? "-" )
                     </div>
                 </div>
             </div>

@@ -26,10 +26,13 @@ namespace EforTakipUygulamasi.Models
         public DateTime? UpdatedDate { get; set; }
         public DateTime? Deadline { get; set; }
         public DateTime? KKTDeadline { get; set; }
+        public DateTime? InProgressDate { get; set; }
+        public DateTime? CompletedDate { get; set; }
 
         public decimal AnalystHours { get; set; } = 0;
         public decimal DeveloperHours { get; set; } = 0;
         public decimal KKTHours { get; set; } = 0;
+        public decimal TasimaHours { get; set; } = 0; // KKT/Preprod/Taşıma
 
         public decimal PreprodHours
         {
@@ -37,8 +40,8 @@ namespace EforTakipUygulamasi.Models
             set { }
         }
 
-        public decimal TotalHours => AnalystHours + DeveloperHours + KKTHours;
-        public decimal TotalManDays => TotalHours / 8;
+        public decimal TotalHours => AnalystHours + DeveloperHours + KKTHours + TasimaHours;
+        public decimal TotalManDays => TotalHours / 7;
 
         public TShirtSizeEnum Size
         {
@@ -57,7 +60,7 @@ namespace EforTakipUygulamasi.Models
             }
         }
 
-        public string Assignee { get; set; } = string.Empty;
+        public int? AzureNumber { get; set; }
         public string CreatedBy { get; set; } = string.Empty;
         public DateTime LastModified { get; set; } = DateTime.Now;
         public string LastModifiedBy { get; set; } = string.Empty;

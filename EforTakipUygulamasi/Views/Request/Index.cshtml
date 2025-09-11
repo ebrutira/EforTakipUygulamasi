@@ -41,15 +41,7 @@
         @if (isActivePage)
         {
             <div class="stat-card">
-                <div class="stat-value" id="inProgress">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.InProgress)</div>
-                <div class="stat-label">Devam Eden</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="testing">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Testing)</div>
-                <div class="stat-label">Test</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalManDays">@(Math.Round(Model.Sum(r => r.TotalHours) / 8, 1))</div>
+                <div class="stat-value" id="totalManDays">@(Math.Round(Model.Sum(r => r.TotalHours) / 7, 1))</div>
                 <div class="stat-label">Toplam Adam-Gün</div>
             </div>
         }
@@ -57,7 +49,7 @@
         {
             <div class="stat-card">
                 <div class="stat-value" id="pending">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.New)</div>
-                <div class="stat-label">Bekleyen</div>
+                <div class="stat-label">Havuz</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="completed">@Model.Count(r => r.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Completed)</div>
@@ -94,12 +86,11 @@
                 <option value="">Tüm Durumlar</option>
                 @if (isActivePage)
                 {
-                    <option value="2">Devam Eden</option>
-                    <option value="3">Test</option>
+                    <option value="2">Yürütme</option>
                 }
                 else
                 {
-                    <option value="1">Bekleyen</option>
+                    <option value="1">Havuz</option>
                     <option value="5">Tamamlandı</option>
                     <option value="6">İptal</option>
                 }
@@ -118,7 +109,8 @@
             <div>İş Büyüklüğü</div>
             <div>Analiz</div>
             <div>Yazılım</div>
-            <div>KKT</div>
+            <div>Test</div>
+            <div>KKT/Preprod/<br>Taşıma</br></div>
             @if (isActivePage)
             {
                 <div>Adam-Gün</div>
@@ -127,7 +119,7 @@
             {
                 <div>Toplam Saat</div>
             }
-            <div>Teslim Tarihi</div>
+            <div>@(isActivePage ? "Tarih" : "Yaygınlaştırma tarihi")</div>
         </div>
         <div id="workItemsList">
             @if (Model != null && Model.Any())
@@ -143,7 +135,6 @@
                          data-name="@request.Name"
                          data-project-id="@(request.ProjectId ?? "")"
                          data-description="@(request.Description ?? "")"
-                         data-assignee="@(request.Assignee ?? "")"
                          onclick="editRequest(@request.Id)">
                         <div class="work-title">
                             @if (!string.IsNullOrEmpty(request.ProjectId))
@@ -166,30 +157,23 @@
                                 }
                                 @if (currentStatus == 1)
                                 {
-                                    <option value="1" selected>Bekleyen</option>
+                                    <option value="1" selected>Havuz</option>
                                 }
                                 else
                                 {
-                                    <option value="1">Bekleyen</option>
+                                    <option value="1">Havuz</option>
                                 }
 
                                 @if (currentStatus == 2)
                                 {
-                                    <option value="2" selected>Devam Eden</option>
+                                    <option value="2" selected>Yürütme</option>
                                 }
                                 else
                                 {
-                                    <option value="2">Devam Eden</option>
+                                    <option value="2">Yürütme</option>
                                 }
 
-                                @if (currentStatus == 3)
-                                {
-                                    <option value="3" selected>Test</option>
-                                }
-                                else
-                                {
-                                    <option value="3">Test</option>
-                                }
+                                <!-- Test durumu kaldırıldı -->
 
                                 @if (currentStatus == 5)
                                 {
@@ -218,16 +202,17 @@
                         <div class="effort-hours">@request.AnalystHours.ToString("F1")h</div>
                         <div class="effort-hours">@request.DeveloperHours.ToString("F1")h</div>
                         <div class="effort-hours">@request.KKTHours.ToString("F1")h</div>
+                        <div class="effort-hours">@request.TasimaHours.ToString("F1")h</div>
                         @if (isActivePage)
                         {
-                            <div class="man-days-badge">@Math.Round(request.TotalHours / 8, 1) gün</div>
+                            <div class="man-days-badge">@Math.Round(request.TotalHours / 7, 1) gün</div>
                         }
                         else
                         {
                             <div class="effort-hours"><strong>@request.TotalHours.ToString("F1")h</strong></div>
                         }
-                        <div class="deadline @GetDeadlineClass(request.Deadline) @((request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Completed || request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled) ? "completed-task" : "")">
-                            @(request.Deadline?.ToString("dd.MM.yyyy") ?? "-")
+                        <div class="deadline @((isActivePage ? EffortHelper.GetScheduleClass(request.KKTDeadline, request.TotalHours) : "")) @((request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Completed || request.Status == EforTakipUygulamasi.Common.RequestStatusEnum.Cancelled) ? "completed-task" : "")">
+                            @((isActivePage ? (request.KKTDeadline?.ToString("dd.MM.yyyy") ?? "-") : (request.Deadline?.ToString("dd.MM.yyyy") ?? "-")))
                         </div>
                     </div>
                 }

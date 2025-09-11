@@ -15,13 +15,13 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <!-- Proje ID ve İş Başlığı -->
-            <div class="form-row">
-                <div class="form-group">
+            <div class="form-row" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                <div class="form-group" style="max-width: 180px;">
                     <label asp-for="ProjectId" class="form-label">Proje ID</label>
-                    <input asp-for="ProjectId" class="form-input project-id-field" maxlength="6" />
+                    <input asp-for="ProjectId" class="form-input project-id-field" maxlength="7" />
                     <span asp-validation-for="ProjectId" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="flex: 1;">
                     <label asp-for="Name" class="form-label">İş Başlığı</label>
                     <input asp-for="Name" class="form-input" required />
                     <span asp-validation-for="Name" class="text-danger"></span>
@@ -38,9 +38,8 @@
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Durum</label>
                     <select asp-for="Status" class="form-input">
-                        <option value="1">Bekleyen</option>
-                        <option value="2">Devam Eden</option>
-                        <option value="3">Test</option>
+                        <option value="1">Havuz</option>
+                        <option value="2">Yürütme</option>
                         <option value="5">Tamamlandı</option>
                         <option value="6">İptal</option>
                     </select>
@@ -57,7 +56,7 @@
                     <span asp-validation-for="Priority" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Deadline" class="form-label">Teslim Tarihi</label>
+                    <label asp-for="Deadline" class="form-label">Yaygınlaştırma tarihi</label>
                     <input asp-for="Deadline" type="date" class="form-input" />
                     <span asp-validation-for="Deadline" class="text-danger"></span>
                 </div>
@@ -65,7 +64,7 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="AnalystHours" class="form-label">Analist Saati</label>
+                    <label asp-for="AnalystHours" class="form-label">Analiz Saati</label>
                     <input asp-for="AnalystHours" type="number" step="0.5" min="0" class="form-input" />
                     <span asp-validation-for="AnalystHours" class="text-danger"></span>
                 </div>
@@ -75,22 +74,27 @@
                     <span asp-validation-for="DeveloperHours" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="KKTHours" class="form-label">KKT/Preprod Saati</label>
+                    <label asp-for="KKTHours" class="form-label">Test/Preprod Saati</label>
                     <input asp-for="KKTHours" type="number" step="0.5" min="0" class="form-input" />
                     <span asp-validation-for="KKTHours" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TasimaHours" class="form-label">KKT/Preprod/Taşıma Saati</label>
+                    <input asp-for="TasimaHours" type="number" step="0.5" min="0" class="form-input" />
+                    <span asp-validation-for="TasimaHours" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="KKTDeadline" class="form-label">KKT Teslim Tarihi</label>
+                    <label asp-for="KKTDeadline" class="form-label">Tarih</label>
                     <input asp-for="KKTDeadline" type="date" class="form-input" />
                     <span asp-validation-for="KKTDeadline" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Assignee" class="form-label">Atanan Kişi</label>
-                    <input asp-for="Assignee" class="form-input" />
-                    <span asp-validation-for="Assignee" class="text-danger"></span>
+                    <label asp-for="AzureNumber" class="form-label">Azure Numarası</label>
+                    <input asp-for="AzureNumber" type="number" class="form-input" />
+                    <span asp-validation-for="AzureNumber" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Toplam Saat</label>
@@ -209,7 +213,7 @@
             }
 
             // Hour input event listeners
-            var hourInputs = document.querySelectorAll('[name="AnalystHours"], [name="DeveloperHours"], [name="KKTHours"]');
+            var hourInputs = document.querySelectorAll('[name="AnalystHours"], [name="DeveloperHours"], [name="KKTHours"], [name="TasimaHours"]');
             hourInputs.forEach(function(input) {
                 input.addEventListener('change', calculateTotalHours);
                 input.addEventListener('input', calculateTotalHours);
@@ -221,8 +225,9 @@
             var analyst = parseFloat(document.querySelector('[name="AnalystHours"]').value) || 0;
             var developer = parseFloat(document.querySelector('[name="DeveloperHours"]').value) || 0;
             var kkt = parseFloat(document.querySelector('[name="KKTHours"]').value) || 0;
-            var total = analyst + developer + kkt;
-            var manDays = total / 8;
+            var tasima = parseFloat(document.querySelector('[name="TasimaHours"]').value) || 0;
+            var total = analyst + developer + kkt + tasima;
+            var manDays = total / 7;
 
             document.getElementById('totalHoursDisplay').textContent = total.toFixed(1);
             document.getElementById('manDaysDisplay').textContent = manDays.toFixed(1);
@@ -402,7 +407,7 @@
             });
 
             function handleFiles(files) {
-                console.log('Dosyalar işleniyor:', files.length);
+                console.log('Dosyalar yükleniyor:', files.length);
                 Array.from(files).forEach(function(file) {
                     if (validateFile(file)) {
                         uploadFileImmediately(file);

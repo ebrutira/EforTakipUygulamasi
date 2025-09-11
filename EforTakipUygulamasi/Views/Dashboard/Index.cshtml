@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Efor Takip Sistemi</title>
+    <title>Dashboard - Talep Takip Sistemi</title>
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -69,25 +69,25 @@
         }
 
             .stat-card.blue {
-                border-left: 4px solid #667eea;
+                border-left: 4px solid #a5b4fc; /* indigo-300 */
             }
 
             .stat-card.yellow {
-                border-left: 4px solid #ffc107;
+                border-left: 4px solid #fcd34d; /* amber-300 */
             }
 
             .stat-card.green {
-                border-left: 4px solid #28a745;
+                border-left: 4px solid #6ee7b7; /* emerald-300 */
             }
 
             .stat-card.red {
-                border-left: 4px solid #e74c3c;
+                border-left: 4px solid #fda4af; /* rose-300 */
             }
 
         .stat-value {
             font-size: 2.2rem;
             font-weight: 700;
-            color: #667eea;
+            color: #334155; /* slightly stronger slate */
             margin-bottom: 0.3rem;
         }
 
@@ -106,6 +106,10 @@
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
             margin-bottom: 2rem;
+        }
+
+        .charts-grid.with-sidebar {
+            grid-template-columns: 3fr 2fr;
         }
 
         .chart-card {
@@ -129,6 +133,19 @@
 
         .effort-chart {
             grid-column: 1 / -1;
+        }
+
+        
+
+        .side-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-self: start;
+        }
+
+        #criticalSection {
+            overflow: auto;
         }
 
         .metrics-grid {
@@ -200,16 +217,111 @@
             a:hover {
                 text-decoration: underline;
             }
+
+        /* Tabs */
+        .tab-navigation {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1rem;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .tab-button {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #64748b;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+            .tab-button:hover {
+                color: #475569;
+                background: rgba(100, 116, 139, 0.08);
+            }
+
+            .tab-button.active {
+                color: white;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+            }
+
+        /* Sections */
+        .section-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+            .section-card h3 {
+                margin: 0 0 1rem 0;
+                color: #334155;
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+
+        .simple-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .simple-table th, .simple-table td {
+                padding: 10px 12px;
+                border-bottom: 1px solid #f1f5f9;
+                text-align: left;
+                font-size: 0.92rem;
+                color: #334155;
+            }
+
+            .simple-table th {
+                color: #475569;
+                font-weight: 700;
+                background: #f8fafc;
+            }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .badge-deadline {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-ok {
+            background: #e2e8f0;
+            color: #475569;
+        }
     </style>
 </head>
 <body>
 
 
     <div class="container">
-        <!-- Dashboard Başlığı -->
-        <div class="dashboard-title">
-            <h1>📊 Efor Takip Dashboard</h1>
-            <p>Son güncelleme: <span id="lastUpdate"></span></p>
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="all">Tüm Talepler</button>
+            <button class="tab-button" data-tab="active">Aktif Talepler</button>
+            <button class="tab-button" data-tab="inactive">Talepler</button>
         </div>
 
         <!-- Özet İstatistikler -->
@@ -248,20 +360,52 @@
         </div>
 
         <!-- Chart'lar -->
-        <div class="charts-grid">
+        <div class="charts-grid" id="chartsGrid">
             <!-- Durum Dağılımı -->
-            <div class="chart-card">
+            <div class="chart-card" id="statusChartCard">
                 <h3>📊 Durum Dağılımı</h3>
                 <div class="chart-container">
                     <canvas id="statusChart"></canvas>
                 </div>
             </div>
 
-            <!-- Büyüklük Dağılımı -->
+            <!-- Büyüklük Dağılımı + Yan Tablolar -->
             <div class="chart-card">
                 <h3>📏 İş Büyüklüğü</h3>
                 <div class="chart-container">
                     <canvas id="sizeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="side-sections">
+                <div id="criticalSection" class="section-card" style="display:none">
+                    <h3>⚠️ Kritik Aktif Talepler</h3>
+                    <table class="simple-table">
+                        <thead>
+                            <tr>
+                                <th>İş</th>
+                                <th>Deadline</th>
+                                <th>Durum</th>
+                                <th>Kalan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="criticalTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="recentCompletedSection" class="section-card" style="display:none">
+                    <h3>✅ Son Tamamlananlar</h3>
+                    <table class="simple-table">
+                        <thead>
+                            <tr>
+                                <th>İş</th>
+                                <th>Tamamlanma</th>
+                                <th>Toplam Saat</th>
+                                <th>Detay</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentCompletedTableBody"></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -274,44 +418,37 @@
             </div>
         </div>
 
-        <!-- Performans Metrikleri -->
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <h3>📈 Verimlilik</h3>
-                <div class="metric-item blue">
-                    <span class="metric-label">Toplam İş Günü</span>
-                    <strong class="metric-value" id="totalManDays">-</strong>
-                </div>
-                <div class="metric-item green">
-                    <span class="metric-label">İş Başına Ort. Saat</span>
-                    <strong class="metric-value" id="averageHours">-</strong>
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>📊 Oranlar</h3>
-                <div class="metric-item orange">
-                    <span class="metric-label">Devam Eden Oran</span>
-                    <strong class="metric-value" id="inProgressRate">-</strong>
-                </div>
-                <div class="metric-item red">
-                    <span class="metric-label">Geciken Oran</span>
-                    <strong class="metric-value" id="overdueRate">-</strong>
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>📅 Zaman Analizi</h3>
-                <div class="metric-item">
-                    <span class="metric-label">Bu Hafta Eklenen</span>
-                    <strong class="metric-value" id="thisWeekCount">-</strong>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-label">Bu Ay Eklenen</span>
-                    <strong class="metric-value" id="thisMonthCount">-</strong>
-                </div>
-            </div>
+        <!-- Dinamik Sekme İçerikleri -->
+        <div id="criticalSection" class="section-card" style="display:none">
+            <h3>⚠️ Kritik Aktif Talepler</h3>
+            <table class="simple-table">
+                <thead>
+                    <tr>
+                        <th>İş</th>
+                        <th>Deadline</th>
+                        <th>Durum</th>
+                        <th>Kalan</th>
+                    </tr>
+                </thead>
+                <tbody id="criticalTableBody"></tbody>
+            </table>
         </div>
+
+        <div id="recentCompletedSection" class="section-card" style="display:none">
+            <h3>✅ Son Tamamlananlar</h3>
+            <table class="simple-table">
+                <thead>
+                    <tr>
+                        <th>İş</th>
+                        <th>Tamamlanma</th>
+                        <th>Toplam Saat</th>
+                        <th>Detay</th>
+                    </tr>
+                </thead>
+                <tbody id="recentCompletedTableBody"></tbody>
+            </table>
+        </div>
+
     </div>
 
     <!-- Scripts -->
@@ -320,14 +457,31 @@
 
 
     <script>
+        let allRequestsData = [];
+        let currentTab = 'all';
+        let statusChartInstance = null;
+        let sizeChartInstance = null;
+        let effortChartInstance = null;
+
         document.addEventListener('DOMContentLoaded', function () {
             console.log('Dashboard yükleniyor...');
 
-            // Son güncelleme zamanını göster
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('tr-TR');
-
+            bindTabEvents();
             loadDashboardData();
         });
+
+        function bindTabEvents() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    if (this.classList.contains('active')) return;
+                    tabButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const selected = this.getAttribute('data-tab');
+                    renderTab(selected);
+                });
+            });
+        }
 
         function loadDashboardData() {
             console.log('API çağrısı yapılıyor...');
@@ -348,8 +502,8 @@
             .then(data => {
                 console.log('✅ API başarılı:', data);
                 if (data && Array.isArray(data) && data.length > 0) {
-                    updateStats(data);
-                    createCharts(data);
+                    allRequestsData = data;
+                    renderTab('all');
                 } else if (data && data.error) {
                     console.error('❌ API Hatası:', data.error);
                     showErrorState();
@@ -394,8 +548,8 @@
             ];
 
             console.log('🧪 Test verisi kullanılıyor:', testData);
-            updateStats(testData);
-            createCharts(testData);
+            allRequestsData = testData;
+            renderTab('all');
         }
 
         function getProp(obj, prop) {
@@ -415,62 +569,170 @@
                 return diffDays > 0 && diffDays <= 14 && (getProp(r, 'status') === 2 || getProp(r, 'status') === 3);
             }).length;
 
-            document.getElementById('totalRequests').textContent = totalRequests;
-            document.getElementById('inProgressRequests').textContent = inProgressRequests;
-            document.getElementById('totalHours').textContent = Math.round(totalHours);
-            document.getElementById('approachingRequests').textContent = approachingRequests;
-
-            const activeRequests = requests.filter(r => getProp(r, 'status') !== 5 && getProp(r, 'status') !== 6);
-            const activeTotalHours = activeRequests.reduce((sum, r) => sum + (getProp(r, 'totalHours') || 0), 0);
-
-            document.getElementById('totalManDays').textContent = (activeTotalHours / 8).toFixed(1);
-            document.getElementById('averageHours').textContent = activeRequests.length > 0 ?
-                (activeTotalHours / activeRequests.length).toFixed(1) + 'h' : '0h';
-            document.getElementById('inProgressRate').textContent = totalRequests > 0 ?
-                (inProgressRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
-            document.getElementById('overdueRate').textContent = totalRequests > 0 ?
-                (approachingRequests * 100 / totalRequests).toFixed(1) + '%' : '0%';
-
-            // Zaman analizi
-            const now = new Date();
-            const thisWeek = requests.filter(r => {
-                const createdDate = new Date(getProp(r, 'createdDate'));
-                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                return createdDate >= weekAgo;
-            }).length;
-
-            const thisMonth = requests.filter(r => {
-                const createdDate = new Date(getProp(r, 'createdDate'));
-                return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
-            }).length;
-
-            document.getElementById('thisWeekCount').textContent = thisWeek;
-            document.getElementById('thisMonthCount').textContent = thisMonth;
+            document.getElementById('totalRequests').textContent = Number(totalRequests).toLocaleString('tr-TR');
+            document.getElementById('inProgressRequests').textContent = Number(inProgressRequests).toLocaleString('tr-TR');
+            document.getElementById('totalHours').textContent = Math.round(totalHours).toLocaleString('tr-TR');
+            document.getElementById('approachingRequests').textContent = Number(approachingRequests).toLocaleString('tr-TR');
         }
 
-        function createCharts(requests) {
-            createStatusChart(requests);
-            createSizeChart(requests);
-            createEffortChart(requests);
+        function renderTab(tabKey) {
+            currentTab = tabKey;
+            const filtered = filterDataByTab(allRequestsData, tabKey);
+            updateStats(filtered);
+            const showStatus = tabKey === 'all';
+            toggleStatusChart(showStatus);
+            if (showStatus) createStatusChart(filtered); else destroyStatusChart();
+            createSizeChart(filtered);
+            createEffortChart(filtered);
+            const grid = document.getElementById('chartsGrid');
+            if (tabKey === 'active') {
+                grid && grid.classList.add('with-sidebar');
+                renderCriticalSection(filtered);
+                toggleSection('criticalSection', true);
+                toggleSection('recentCompletedSection', false);
+            } else if (tabKey === 'inactive') {
+                grid && grid.classList.add('with-sidebar');
+                renderRecentCompletedSection(allRequestsData);
+                toggleSection('criticalSection', false);
+                toggleSection('recentCompletedSection', true);
+            } else {
+                grid && grid.classList.remove('with-sidebar');
+                toggleSection('criticalSection', false);
+                toggleSection('recentCompletedSection', false);
+            }
+        }
+
+        function filterDataByTab(data, tabKey) {
+            if (!Array.isArray(data)) return [];
+            if (tabKey === 'active') {
+                return data.filter(r => [2, 3].includes(getProp(r, 'status')));
+            }
+            if (tabKey === 'inactive') {
+                return data.filter(r => ![2, 3].includes(getProp(r, 'status')));
+            }
+            return data;
+        }
+
+        function toggleStatusChart(show) {
+            const card = document.getElementById('statusChartCard');
+            if (!card) return;
+            card.style.display = show ? '' : 'none';
+        }
+
+        function toggleSection(id, show) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = show ? '' : 'none';
+        }
+
+        function statusText(code) {
+            const c = Number(code);
+            switch (c) {
+                case 1: return 'Havuz';
+                case 2: return 'Yürütme';
+                case 3: return 'Test';
+                case 5: return 'Tamamlandı';
+                case 6: return 'İptal';
+                default: return 'Diğer';
+            }
+        }
+
+        function daysDiff(from, to) {
+            const ms = to - from;
+            return Math.floor(ms / (1000 * 60 * 60 * 24));
+        }
+
+        function renderCriticalSection(activeRequests) {
+            const tbody = document.getElementById('criticalTableBody');
+            if (!tbody) return;
+            const now = new Date();
+
+            const rows = activeRequests
+                .filter(r => getProp(r, 'deadline'))
+                .map(r => {
+                    const deadline = new Date(getProp(r, 'deadline'));
+                    const diff = daysDiff(now, deadline);
+                    const overdue = deadline < now;
+                    const near = diff >= 0 && diff <= 7;
+                    return { r, deadline, diff, overdue, near };
+                })
+                .filter(x => x.overdue || x.near)
+                .sort((a, b) => a.deadline - b.deadline)
+                .slice(0, 10);
+
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color:#64748b">Kritik aktif talep yok.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rows.map(x => {
+                const name = getProp(x.r, 'name');
+                const id = getProp(x.r, 'id');
+                const status = statusText(getProp(x.r, 'status'));
+                const dateStr = x.deadline.toLocaleDateString('tr-TR');
+                const badge = x.overdue ? `<span class="badge badge-deadline">Gecikmiş</span>` : `<span class="badge badge-warning">${x.diff} gün</span>`;
+                return `
+                    <tr>
+                        <td><a href="/Request/Details/${id}">${name}</a></td>
+                        <td>${dateStr}</td>
+                        <td>${status}</td>
+                        <td>${badge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRecentCompletedSection(allData) {
+            const tbody = document.getElementById('recentCompletedTableBody');
+            if (!tbody) return;
+
+            const items = (allData || [])
+                .filter(r => Number(getProp(r, 'status')) === 5)
+                .map(r => {
+                    const completed = getProp(r, 'completedDate') ? new Date(getProp(r, 'completedDate')) : (getProp(r, 'updatedDate') ? new Date(getProp(r, 'updatedDate')) : new Date(getProp(r, 'createdDate')));
+                    return { r, completed };
+                })
+                .sort((a, b) => b.completed - a.completed)
+                .slice(0, 4);
+
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color:#64748b">Tamamlanan kayıt yok.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = items.map(x => {
+                const name = getProp(x.r, 'name');
+                const id = getProp(x.r, 'id');
+                const dateStr = x.completed.toLocaleDateString('tr-TR');
+                const total = Math.round(getProp(x.r, 'totalHours') || 0).toLocaleString('tr-TR');
+                return `
+                    <tr>
+                        <td><a href="/Request/Details/${id}">${name}</a></td>
+                        <td>${dateStr}</td>
+                        <td>${total}</td>
+                        <td><a href="/Request/Details/${id}">Görüntüle</a></td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function createStatusChart(requests) {
             const statusCounts = {
                 new: requests.filter(r => getProp(r, 'status') === 1).length,
-                inProgress: requests.filter(r => getProp(r, 'status') === 2).length,
-                testing: requests.filter(r => getProp(r, 'status') === 3).length,
+                inProgress: requests.filter(r => getProp(r, 'status') === 2 || getProp(r, 'status') === 3).length,
                 completed: requests.filter(r => getProp(r, 'status') === 5).length
             };
 
             const ctx = document.getElementById('statusChart');
             if (ctx && typeof Chart !== 'undefined') {
-                new Chart(ctx, {
+                if (statusChartInstance) { statusChartInstance.destroy(); statusChartInstance = null; }
+                statusChartInstance = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Bekleyen', 'Devam Eden', 'Test', 'Tamamlandı'],
+                        labels: ['Havuz', 'Yürütme', 'Tamamlandı'],
                         datasets: [{
-                            data: [statusCounts.new, statusCounts.inProgress, statusCounts.testing, statusCounts.completed],
-                            backgroundColor: ['#fbbf24', '#3b82f6', '#f97316', '#10b981'],
+                            data: [statusCounts.new, statusCounts.inProgress, statusCounts.completed],
+                            backgroundColor: ['#f59e0b', '#6366f1', '#34d399'],
                             borderWidth: 2,
                             borderColor: '#fff'
                         }]
@@ -500,7 +762,7 @@
                     (getProp(r, 'developerHours') || 0) +
                     (getProp(r, 'kktHours') || 0) +
                     (getProp(r, 'preprodHours') || 0);
-                const days = totalHours / 8;
+                const days = totalHours / 7;
 
                 let size = 'FastTrack';
                 if (days <= 5) size = 'FastTrack';
@@ -515,14 +777,15 @@
 
             const ctx = document.getElementById('sizeChart');
             if (ctx && typeof Chart !== 'undefined') {
-                new Chart(ctx, {
+                if (sizeChartInstance) { sizeChartInstance.destroy(); sizeChartInstance = null; }
+                sizeChartInstance = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: Object.keys(sizeCounts),
                         datasets: [{
                             label: 'İş Sayısı',
                             data: Object.values(sizeCounts),
-                            backgroundColor: ['#10b981', '#10b981', '#fbbf24', '#f97316', '#ef4444', '#8b5cf6'],
+                            backgroundColor: ['#34d399', '#6ee7b7', '#f59e0b', '#fb923c', '#6366f1', '#f472b6'],
                             borderRadius: 4
                         }]
                     },
@@ -547,25 +810,27 @@
         }
 
         function createEffortChart(requests) {
-            let analystTotal = 0, devTotal = 0, kktTotal = 0, preprodTotal = 0;
+            let analystTotal = 0, devTotal = 0, kktTotal = 0, preprodTotal = 0, tasimaTotal = 0;
 
             requests.forEach(r => {
                 analystTotal += getProp(r, 'analystHours') || 0;
                 devTotal += getProp(r, 'developerHours') || 0;
                 kktTotal += getProp(r, 'kktHours') || 0;
                 preprodTotal += getProp(r, 'preprodHours') || 0;
+                tasimaTotal += getProp(r, 'tasimaHours') || 0;
             });
 
             const ctx = document.getElementById('effortChart');
             if (ctx && typeof Chart !== 'undefined') {
-                new Chart(ctx, {
+                if (effortChartInstance) { effortChartInstance.destroy(); effortChartInstance = null; }
+                effortChartInstance = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Analiz', 'Yazılım', 'KKT/Preprod'],
+                        labels: ['Analiz', 'Yazılım', 'Test/Preprod', 'KKT/Preprod/Taşıma'],
                         datasets: [{
                             label: 'Toplam Saat',
-                            data: [analystTotal, devTotal, kktTotal + preprodTotal],
-                            backgroundColor: ['#667eea', '#10b981', '#fbbf24'],
+                            data: [analystTotal, devTotal, (kktTotal + preprodTotal), tasimaTotal],
+                            backgroundColor: ['#6366f1', '#34d399', '#f59e0b', '#f472b6'],
                             borderRadius: 6
                         }]
                     },
@@ -589,13 +854,15 @@
             }
         }
 
+        function destroyStatusChart() {
+            if (statusChartInstance) { statusChartInstance.destroy(); statusChartInstance = null; }
+        }
+
         function showEmptyState() {
             document.getElementById('totalRequests').textContent = '0';
             document.getElementById('inProgressRequests').textContent = '0';
             document.getElementById('totalHours').textContent = '0';
             document.getElementById('approachingRequests').textContent = '0';
-            document.getElementById('totalManDays').textContent = '0';
-            document.getElementById('averageHours').textContent = '0h';
         }
 
         function showErrorState() {
@@ -603,8 +870,6 @@
             document.getElementById('inProgressRequests').textContent = 'Hata';
             document.getElementById('totalHours').textContent = 'Hata';
             document.getElementById('approachingRequests').textContent = 'Hata';
-            document.getElementById('totalManDays').textContent = 'Hata';
-            document.getElementById('averageHours').textContent = 'Hata';
         }
     </script>
 </body>

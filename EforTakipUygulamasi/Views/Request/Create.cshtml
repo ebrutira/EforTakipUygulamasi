@@ -20,8 +20,8 @@
             <form method="post" id="createForm">
 
                 <!-- Temel Bilgiler -->
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-row" style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                    <div class="form-group" style="max-width: 180px;">
                         <label class="form-label" for="ProjectId">Proje ID</label>
                         <input type="text"
                                class="form-input project-id-field"
@@ -32,7 +32,7 @@
                         <small style="color: #64748b;">Boş bırakırsanız otomatik oluşturulur: @ViewBag.SuggestedProjectId</small>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="Name">Talep Adı *</label>
                         <input type="text"
                                class="form-input"
@@ -57,7 +57,7 @@
                 <!-- Tarihler -->
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="Deadline">Teslim Tarihi</label>
+                        <label class="form-label" for="Deadline">Yaygınlaştırma tarihi</label>
                         <input type="date"
                                class="form-input"
                                id="Deadline"
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="KKTDeadline">KKT Deadline</label>
+                        <label class="form-label" for="KKTDeadline">Tarih</label>
                         <input type="date"
                                class="form-input"
                                id="KKTDeadline"
@@ -80,9 +80,8 @@
                     <div class="form-group">
                         <label class="form-label" for="Status">İş Durumu *</label>
                         <select class="form-input" id="Status" name="Status" required>
-                            <option value="1" selected>Bekleyen</option>
-                            <option value="2">Devam Eden</option>
-                            <option value="3">Test</option>
+                            <option value="1" selected>Havuz</option>
+                            <option value="2">Yürütme</option>
                             <option value="5">Tamamlandı</option>
                             <option value="6">İptal</option>
                         </select>
@@ -102,7 +101,7 @@
                 <!-- Efor Saatleri -->
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="AnalystHours">Analist Saat</label>
+                        <label class="form-label" for="AnalystHours">Analiz Saat</label>
                         <input type="number"
                                class="form-input"
                                id="AnalystHours"
@@ -128,7 +127,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="KKTHours">KKT Saat</label>
+                        <label class="form-label" for="KKTHours">Test Saat</label>
                         <input type="number"
                                class="form-input"
                                id="KKTHours"
@@ -140,13 +139,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="Assignee">Atanan Kişi</label>
-                        <input type="text"
+                        <label class="form-label" for="TasimaHours">KKT/Preprod/Taşıma Saat</label>
+                        <input type="number"
                                class="form-input"
-                               id="Assignee"
-                               name="Assignee"
-                               value="@Model.Assignee"
-                               placeholder="Örn: Ahmet Yılmaz" />
+                               id="TasimaHours"
+                               name="TasimaHours"
+                               value="@Model.TasimaHours"
+                               min="0"
+                               step="0.5"
+                               placeholder="0.0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="AzureNumber">Azure Numarası</label>
+                        <input type="number"
+                               class="form-input"
+                               id="AzureNumber"
+                               name="AzureNumber"
+                               value="@Model.AzureNumber"
+                               min="0"
+                               step="1"
+                               placeholder="Örn: 123456" />
                     </div>
                 </div>
 
@@ -293,9 +306,10 @@
         const analyst = parseFloat(document.getElementById('AnalystHours').value) || 0;
         const developer = parseFloat(document.getElementById('DeveloperHours').value) || 0;
         const kkt = parseFloat(document.getElementById('KKTHours').value) || 0;
+        const tasima = parseFloat(document.getElementById('TasimaHours').value) || 0;
 
-        const totalHours = analyst + developer + kkt;
-        const manDays = totalHours / 8;
+        const totalHours = analyst + developer + kkt + tasima;
+        const manDays = totalHours / 7;
 
         let tshirtSize = 'Fast Track';
         let color = '#28a745';
@@ -315,6 +329,7 @@
     document.getElementById('AnalystHours').addEventListener('input', calculateTotals);
     document.getElementById('DeveloperHours').addEventListener('input', calculateTotals);
     document.getElementById('KKTHours').addEventListener('input', calculateTotals);
+    document.getElementById('TasimaHours').addEventListener('input', calculateTotals);
 
     document.addEventListener('DOMContentLoaded', calculateTotals);
 

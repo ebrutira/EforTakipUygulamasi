@@ -32,6 +32,7 @@ namespace EforTakipUygulamasi.Controllers
                     DeveloperTotalHours = requests.Sum(r => r.DeveloperHours),
                     KKTTotalHours = requests.Sum(r => r.KKTHours),
                     PreprodTotalHours = requests.Sum(r => r.PreprodHours),
+                    TasimaTotalHours = requests.Sum(r => r.TasimaHours),
 
                     ThisYearCreated = requests.Count(r => r.CreatedDate.Year == DateTime.Now.Year),
                     ThisMonthCreated = requests.Count(r => r.CreatedDate.Month == DateTime.Now.Month),
@@ -65,7 +66,7 @@ namespace EforTakipUygulamasi.Controllers
                 else
                 {
                     var csv = new StringBuilder();
-                    csv.AppendLine("ID,Ad,Durum,Öncelik,Analist,Yazılım,KKT,Preprod,Toplam,Oluşturma,Deadline");
+                    csv.AppendLine("ID,Ad,Durum,Öncelik,Analist,Yazılım,KKT,Preprod,Taşıma,Toplam,Oluşturma,Deadline");
 
                     foreach (var req in requests)
                     {
@@ -77,6 +78,7 @@ namespace EforTakipUygulamasi.Controllers
                                      $"{req.DeveloperHours}," +
                                      $"{req.KKTHours}," +
                                      $"{req.PreprodHours}," +
+                                     $"{req.TasimaHours}," +
                                      $"{req.TotalHours}," +
                                      $"{req.CreatedDate:yyyy-MM-dd}," +
                                      $"{req.Deadline?.ToString("yyyy-MM-dd") ?? ""}");
@@ -106,6 +108,7 @@ namespace EforTakipUygulamasi.Controllers
         public decimal DeveloperTotalHours { get; set; } = 0;
         public decimal KKTTotalHours { get; set; } = 0;
         public decimal PreprodTotalHours { get; set; } = 0;
+        public decimal TasimaTotalHours { get; set; } = 0;
 
         public int ThisYearCreated { get; set; } = 0;
         public int ThisMonthCreated { get; set; } = 0;

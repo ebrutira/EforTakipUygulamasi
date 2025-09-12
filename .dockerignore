@@ -1,0 +1,26 @@
+# Exclude build outputs
+**/bin/
+**/obj/
+
+# IDE and user-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Git
+.git/
+.gitignore
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Node/build artifacts if any
+**/node_modules/
+**/dist/
+
+# Local uploads and large files (keep structure, exclude contents)
+EforTakipUygulamasi/wwwroot/uploads/
+
+

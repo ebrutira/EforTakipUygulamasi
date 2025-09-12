@@ -28,7 +28,11 @@ ASP.NET Core MVC (net8.0) ile geliştirilmiş basit ve pratik bir talep/efor tak
 
 ### Adımlar
 1. Depoyu klonlayın.
-2. Proje kökünde aşağıdaki komutla derleyin:
+2. NuGet paketlerini geri yükleyin (ilk derleme bunu otomatik yapar):
+```bash
+dotnet restore
+```
+3. Proje kökünde aşağıdaki komutla derleyin:
 ```bash
 dotnet build
 ```
@@ -102,6 +106,30 @@ Uygulama verileri dosya tabanlı JSON içinde saklanır:
 cd EforTakipUygulamasi
 dotnet watch run
 ```
+
+### Docker ile Çalıştırma
+
+Önce Docker imajını oluşturun, ardından çalıştırın:
+```bash
+# İmaj oluşturma (repo kökünde)
+docker build -t efor-takip:latest .
+
+# Konteyneri 8080 portundan yayınlayın
+docker run --rm -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Development \
+  -v %cd%/EforTakipUygulamasi/Data:/app/Data \
+  -v %cd%/EforTakipUygulamasi/wwwroot/uploads:/app/wwwroot/uploads \
+  efor-takip:latest
+
+# Linux/macOS için path örneği
+# -v $(pwd)/EforTakipUygulamasi/Data:/app/Data \
+# -v $(pwd)/EforTakipUygulamasi/wwwroot/uploads:/app/wwwroot/uploads \
+```
+
+Notlar:
+- Uygulama konteyner içinde 8080 portunu dinler (`ASPNETCORE_URLS=http://+:8080`).
+- `Data` ve `wwwroot/uploads` klasörlerini volume olarak bağlamak verinin kalıcı olmasını sağlar.
+- İmaj .NET 8 çok-aşamalı build ile yayınlanır; ek NuGet yapılandırmasına gerek yoktur.
 
 ### Kullanıcı/Talep verilerini düzenleme
 - `Data/users.json` ve `Data/requests.json` dosyalarını doğrudan düzenleyebilirsiniz.

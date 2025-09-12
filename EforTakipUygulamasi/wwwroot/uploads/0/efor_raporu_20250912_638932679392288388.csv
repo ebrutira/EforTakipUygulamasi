@@ -1,0 +1,22 @@
+ID,Ad,Durum,Öncelik,Analist,Yazılım,KKT,Preprod,Taşıma,Toplam,Oluşturma,Deadline
+1,"Kullanıcı Yönetimi Modülü",Completed,High,12,24,8,0,0,44,2024-08-20,2024-08-30
+2,"Rapor Sistemi",InProgress,Medium,8,20,6,0,0,34,2024-08-21,2024-09-05
+3,"Dashboard Geliştirmeleri",Completed,Medium,4,16,4,0,0,24,2024-08-15,2024-08-25
+4,"deneme",Completed,Critical,12,20,8,0,0,40,2025-08-25,2025-09-01
+5,"aaa",Completed,Critical,60,120,22,0,0,202,2025-08-25,2025-10-06
+6,"DENEME",Completed,High,32,48,10,0,0,90,2025-08-25,2025-09-08
+7,"sds",Cancelled,Critical,32,45,12,0,0,89,2025-08-26,2025-09-01
+8,"aaa",Completed,Critical,22,35,5,15,5,0,0,73,0,2025-08-27,2025-10-06
+10,"eee",Completed,Medium,0,0,0,0,0,0,2025-09-01,2025-11-03
+11,"ww",Completed,Medium,12,21,13,0,0,46,2025-09-01,2025-10-11
+12,"VB İz Ajanda",InProgress,High,120,200,100,0,0,420,2025-09-03,2026-01-30
+13,"developer deneme",InProgress,Medium,120,200,80,0,0,400,2025-09-04,2026-01-13
+14,"VB İz Ajanda",InProgress,Medium,23,12,34,0,0,69,2025-09-04,2025-10-12
+15,"a",Completed,Medium,12,21,12,0,2,47,2025-09-04,2025-10-05
+16,"VB İz Ajandaa",Completed,Critical,200,310,120,0,0,630,2025-09-04,2026-02-01
+17,"gvd",InProgress,Medium,150,320,100,0,0,570,2025-09-04,2026-05-23
+18,"XS İzleme Modülü",Completed,Medium,6,10,2,0,1,19,2025-05-12,2025-06-01
+19,"S Rapor Geliştirme",Completed,High,8,16,4,0,2,30,2025-06-10,2025-06-25
+20,"M Entegrasyon",Completed,Medium,12,40,8,0,4,64,2025-07-05,2025-08-01
+21,"L Rapor Otomasyonu",Completed,High,20,60,12,0,6,98,2025-07-15,2025-09-01
+22,"FastTrack Sıcak Düzeltme",Completed,Critical,2,6,1,0,0,5,9,5,2025-08-10,2025-08-15

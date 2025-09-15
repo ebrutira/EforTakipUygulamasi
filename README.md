@@ -176,3 +176,10 @@ Görselleri repoda tutmak için `docs/screenshots/` klasörüne ekleyin ve aşa�
 ![Dashboard - 3](docs/screenshots/dashboard-3.png)
 
 
+<div align="center">
+
+**⭐ Star this repo if you found it helpful!**
+
+Made with ❤️ by [Ebru Tıraş](https://github.com/ebrutira)
+
+</div>

@@ -154,26 +154,68 @@ EforTakipUygulamasi/
 
 Görselleri repoda tutmak için `docs/screenshots/` klasörüne ekleyin ve aşağıdaki adlarla kaydedin. README bu göreli yollarla görüntüleyecektir.
 
-### Giriş ve Kullanıcı (4 adet)
-![Giriş - 1](docs/screenshots/login-1.png)
-![Kullanıcı Listesi](docs/screenshots/users-1.png)
-![Kullanıcı Düzenleme](docs/screenshots/users-2.png)
-![Kullanıcı Olusturma](docs/screenshots/users-3.png)
+### Giriş ve Kullanıcı Yönetimi
 
-### Talepler (5 adet)
-![Talepler - 1](docs/screenshots/requests-1.png)
-![Talepler - 2](docs/screenshots/requests-2.png)
-![Talepler - 3](docs/screenshots/requests-3.png)
-![Talepler - 4](docs/screenshots/requests-4.png)
-![Talepler - 5](docs/screenshots/requests-5.png)
+<div align="center">
 
-### Rapor (1 adet)
-![Raporlar](docs/screenshots/report-1.png)
+**Giriş Sayfası**  
+<img src="docs/screenshots/login-1.png" alt="Giriş Sayfası" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
 
-### Dashboard (3 adet)
-![Dashboard - 1](docs/screenshots/dashboard-1.png)
-![Dashboard - 2](docs/screenshots/dashboard-2.png)
-![Dashboard - 3](docs/screenshots/dashboard-3.png)
+**Kullanıcı Listesi**  
+<img src="docs/screenshots/users-1.png" alt="Kullanıcı Listesi" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Kullanıcı Düzenleme**  
+<img src="docs/screenshots/users-2.png" alt="Kullanıcı Düzenleme" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Kullanıcı Oluşturma**  
+<img src="docs/screenshots/users-3.png" alt="Kullanıcı Oluşturma" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+</div>
+
+### Talep Yönetimi
+
+<div align="center">
+
+**Talep Listesi - Genel Görünüm**  
+<img src="docs/screenshots/requests-1.png" alt="Talep Listesi - Genel Görünüm" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Talep Listesi - Filtreleme**  
+<img src="docs/screenshots/requests-2.png" alt="Talep Listesi - Filtreleme" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Talep Detay Sayfası**  
+<img src="docs/screenshots/requests-3.png" alt="Talep Detay Sayfası" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Talep Düzenleme**  
+<img src="docs/screenshots/requests-4.png" alt="Talep Düzenleme" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Talep Oluşturma**  
+<img src="docs/screenshots/requests-5.png" alt="Talep Oluşturma" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+</div>
+
+### Raporlama
+
+<div align="center">
+
+**Rapor Sayfası**  
+<img src="docs/screenshots/report-1.png" alt="Rapor Sayfası" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+</div>
+
+### Dashboard ve İstatistikler
+
+<div align="center">
+
+**Dashboard - Genel İstatistikler**  
+<img src="docs/screenshots/dashboard-1.png" alt="Dashboard - Genel İstatistikler" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Dashboard - Aktif İşler**  
+<img src="docs/screenshots/dashboard-2.png" alt="Dashboard - Aktif İşler" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+**Dashboard - Yaklaşan Kritik İşler**  
+<img src="docs/screenshots/dashboard-3.png" alt="Dashboard - Yaklaşan Kritik İşler" width="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+
+</div>
 
 
 <div align="center">
